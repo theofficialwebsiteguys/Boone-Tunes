@@ -1,0 +1,23 @@
+<ul class="playlist-list">
+  @for (playlist of playlists; track playlist.id) {
+    <li
+      class="playlist-item"
+      [class.active]="playlist.spotifyPlaylistId === selectedId"
+      (click)="select(playlist)"
+    >
+      @if (playlist.imageUrl) {
+        <img class="thumb" [src]="playlist.imageUrl" [alt]="playlist.name" />
+      } @else if (playlist.spotifyPlaylistId === 'liked-songs') {
+        <div class="thumb thumb-placeholder thumb-heart">♥</div>
+      } @else {
+        <div class="thumb thumb-placeholder">♪</div>
+      }
+      <div class="meta">
+        <span class="name">{{ playlist.name }}</span>
+        @if (playlist.trackCount !== null) {
+          <span class="count">{{ playlist.trackCount }} tracks</span>
+        }
+      </div>
+    </li>
+  }
+</ul>

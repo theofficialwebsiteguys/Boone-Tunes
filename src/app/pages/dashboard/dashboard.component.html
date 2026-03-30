@@ -1,0 +1,122 @@
+<div class="page">
+
+  <app-navbar
+    [user]="user"
+    [showSearch]="true"
+    (queryChange)="onSearch($event)"
+    (logoutClick)="logout()"
+  ></app-navbar>
+
+  <main class="content">
+
+    <!-- Search results view -->
+    @if (searchQuery) {
+      <section class="section">
+        <h2 class="section-title">
+          Results for <span class="gt-blue">"{{ searchQuery }}"</span>
+        </h2>
+
+        @if (loadingSearch) {
+          <div class="state-msg">Searching…</div>
+        } @else if (searchError) {
+          <div class="state-msg error">{{ searchError }}</div>
+        } @else if (searchResults.length === 0) {
+          <div class="state-msg">No results found.</div>
+        } @else {
+          <div class="track-list">
+            @for (track of searchResults; track track.spotifyId; let i = $index) {
+              <app-track-row
+                [track]="track"
+                [index]="i"
+                (play)="playTrack(track)"
+                (queue)="addToQueue(track)"
+              ></app-track-row>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+
+      <!-- Greeting + tabs -->
+      <section class="section">
+        <div class="greeting-row">
+          <p class="greeting-label">{{ greeting }},</p>
+          <h1 class="greeting-name">{{ user?.displayName ?? 'Music Fan' }}</h1>
+        </div>
+
+        <div class="tabs">
+          <button
+            class="tab"
+            [class.active]="activeTab === 'playlists'"
+            (click)="activeTab = 'playlists'"
+          >Playlists</button>
+          <button
+            class="tab"
+            [class.active]="activeTab === 'liked'"
+            (click)="activeTab = 'liked'"
+          >Liked Songs</button>
+        </div>
+      </section>
+
+      <!-- Playlist grid -->
+      <section class="section">
+        @if (loadingPlaylists) {
+          <div class="grid-skeleton">
+            @for (n of [1,2,3,4,5,6,7,8]; track n) {
+              <div class="skeleton-card"></div>
+            }
+          </div>
+        } @else if (playlistsError) {
+          <div class="state-msg error">{{ playlistsError }}</div>
+        } @else if (visiblePlaylists.length === 0) {
+          <div class="state-msg">No playlists found.</div>
+        } @else {
+          <div class="playlist-grid">
+            @for (pl of visiblePlaylists; track pl.spotifyPlaylistId) {
+              <app-playlist-card
+                [playlist]="pl"
+                (selected)="selectPlaylist($event)"
+              ></app-playlist-card>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Feature cards -->
+      <div class="feature-section">
+        <div class="feature-card feat-blue">
+          <div class="feat-card-icon">♪</div>
+          <div class="feat-card-body">
+            <h4>Spotify Sync</h4>
+            <p>All your playlists, live from Spotify.</p>
+          </div>
+        </div>
+        <div class="feature-card feat-teal">
+          <div class="feat-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+          </div>
+          <div class="feat-card-body">
+            <h4>YouTube Videos</h4>
+            <p>Watch matching music videos for every track.</p>
+          </div>
+        </div>
+        <div class="feature-card feat-purple">
+          <div class="feat-card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+          <div class="feat-card-body">
+            <h4>Queue &amp; Shuffle</h4>
+            <p>Build queues, shuffle, repeat — your way.</p>
+          </div>
+        </div>
+      </div>
+
+    }
+  </main>
+
+</div>

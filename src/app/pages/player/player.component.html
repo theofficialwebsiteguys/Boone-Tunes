@@ -1,0 +1,77 @@
+<div class="page">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <button class="btn-back" (click)="goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Library
+    </button>
+
+    @if (currentItem) {
+      <div class="now-playing-pill">
+        <span class="pill-dot"></span>
+        Now Playing — {{ currentItem.track.name }}
+      </div>
+    }
+  </div>
+
+  <!-- Main layout: video + sidebar -->
+  <div class="player-layout">
+
+    <!-- Left: video area + controls -->
+    <div class="video-area">
+
+      <!-- Video screen -->
+      <div class="video-screen">
+        @if (currentItem) {
+          <div class="video-inner">
+            <div class="video-gradient"></div>
+            <div class="video-track-info">
+              <p class="vt-artist">{{ currentItem.track.artists.join(' · ') }}</p>
+              <h2 class="vt-name">{{ currentItem.track.name }}</h2>
+              @if (currentItem.track.albumName) {
+                <p class="vt-album">{{ currentItem.track.albumName }}</p>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="video-empty">
+            <span class="video-empty-icon">♪</span>
+            <p>No track playing</p>
+          </div>
+        }
+      </div>
+
+      <!-- Controls bar -->
+      <div class="controls-bar">
+        <app-player-controls
+          [isPlaying]="isPlaying"
+          [isShuffle]="isShuffle"
+          [isRepeat]="isRepeat"
+          [progress]="progress"
+          [volume]="volume"
+          [currentTime]="currentTimeStr"
+          [totalTime]="totalTimeStr"
+          (togglePlay)="playerSvc.togglePlay()"
+          (prev)="playerSvc.previous()"
+          (next)="playerSvc.next()"
+          (toggleShuffle)="playerSvc.toggleShuffle()"
+          (toggleRepeat)="playerSvc.toggleRepeat()"
+          (seekTo)="playerSvc.seekTo($event)"
+          (volumeChange)="playerSvc.setVolume($event)"
+        ></app-player-controls>
+      </div>
+    </div>
+
+    <!-- Right: queue sidebar -->
+    <app-queue-sidebar
+      [queue]="queue"
+      [currentIndex]="index"
+      (playAtIndex)="playerSvc.playAtIndex($event)"
+      (clearQueue)="playerSvc.clearQueue()"
+    ></app-queue-sidebar>
+
+  </div>
+</div>

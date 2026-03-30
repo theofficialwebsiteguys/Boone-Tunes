@@ -1,0 +1,102 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--t), border-color var(--t), box-shadow var(--t);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-light);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card-image {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--t-slow);
+}
+
+.card:hover .card-image img {
+  transform: scale(1.04);
+}
+
+.card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--text-dim);
+  background: var(--surface-2);
+}
+
+.card-placeholder-heart {
+  background: #1f0a17;
+  color: #e8547a;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--t);
+}
+
+.card:hover .card-overlay {
+  opacity: 1;
+}
+
+.play-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5b7cfa, #8b5cf6, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(91, 124, 250, 0.5);
+  transform: scale(0.85);
+  transition: transform var(--t);
+}
+
+.card:hover .play-btn {
+  transform: scale(1);
+}
+
+.card-body {
+  padding: 0.9rem 1rem;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.25rem;
+}
+
+.card-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

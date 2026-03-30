@@ -1,0 +1,21 @@
+<nav class="navbar">
+  <div class="navbar-logo" (click)="goHome()">
+    <div class="logo-icon">♪</div>
+    <span class="logo-text">BooneTunes</span>
+  </div>
+
+  @if (showSearch) {
+    <div class="navbar-search">
+      <app-search-bar
+        (queryChange)="queryChange.emit($event)"
+      />
+    </div>
+  }
+
+  <div class="navbar-right">
+    @if (user) {
+      <div class="avatar">{{ avatarLetter }}</div>
+      <button class="btn-logout" (click)="logoutClick.emit()">Logout</button>
+    }
+  </div>
+</nav>

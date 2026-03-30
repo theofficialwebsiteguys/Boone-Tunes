@@ -1,0 +1,94 @@
+<div class="page">
+
+  <app-navbar [showSearch]="false" (logoutClick)="goBack()"></app-navbar>
+
+  <main class="content">
+
+    <!-- Back button -->
+    <button class="btn-back" (click)="goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to Library
+    </button>
+
+    @if (playlist) {
+      <!-- Playlist header -->
+      <div class="playlist-header">
+        <div class="cover-wrap">
+          @if (isLikedSongs) {
+            <div class="cover cover-liked">♥</div>
+          } @else if (playlist.imageUrl) {
+            <img class="cover" [src]="playlist.imageUrl" [alt]="playlist.name" />
+          } @else {
+            <div class="cover cover-placeholder">♪</div>
+          }
+        </div>
+
+        <div class="playlist-meta">
+          <span class="meta-label">Playlist</span>
+          <h1 class="meta-title">{{ playlist.name }}</h1>
+          @if (playlist.description) {
+            <p class="meta-desc">{{ playlist.description }}</p>
+          }
+          @if (playlist.trackCount !== null) {
+            <span class="meta-count">{{ playlist.trackCount }} tracks</span>
+          }
+
+          <div class="meta-actions">
+            <button class="btn-grad btn-play" (click)="playAll()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Play All
+            </button>
+            <button class="btn-out btn-shuffle" (click)="playShuffle()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+                <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+              </svg>
+              Shuffle
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Track list -->
+    <div class="tracks-section">
+      @if (loading) {
+        <div class="state-msg">Loading tracks…</div>
+      } @else if (error) {
+        <div class="state-msg error">{{ error }}</div>
+      } @else if (tracks.length === 0) {
+        <div class="state-msg">No tracks found.</div>
+      } @else {
+
+        <!-- Column headers -->
+        <div class="track-header-row">
+          <span class="col-num">#</span>
+          <span class="col-title">Title</span>
+          <span class="col-album">Album</span>
+          <span class="col-dur">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+        </div>
+        <div class="divider"></div>
+
+        <div class="track-list">
+          @for (track of tracks; track track.spotifyId; let i = $index) {
+            <app-track-row
+              [track]="track"
+              [index]="i"
+              (play)="playTrack(track)"
+              (queue)="addToQueue(track)"
+            ></app-track-row>
+          }
+        </div>
+      }
+    </div>
+
+  </main>
+</div>

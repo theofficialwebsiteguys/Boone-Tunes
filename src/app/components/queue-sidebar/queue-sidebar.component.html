@@ -1,0 +1,40 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div>
+      <h3>Up Next</h3>
+      <p class="subtitle">{{ queue.length }} tracks in queue</p>
+    </div>
+    <button class="btn-clear" (click)="clearQueue.emit()">Clear</button>
+  </div>
+
+  <div class="queue-list">
+    @for (item of queue; track item.track.spotifyId; let i = $index) {
+      <div
+        class="queue-item"
+        [class.active]="i === currentIndex"
+        (click)="playAtIndex.emit(i)"
+      >
+        @if (item.track.albumArtUrl) {
+          <img class="q-art" [src]="item.track.albumArtUrl" [alt]="item.track.albumName" loading="lazy" />
+        } @else {
+          <div class="q-art q-art-placeholder">♪</div>
+        }
+
+        <div class="q-info">
+          <span class="q-name">{{ item.track.name }}</span>
+          <span class="q-artist">{{ item.track.artists.join(', ') }}</span>
+        </div>
+
+        <div class="q-status">
+          @if (item.status === 'error') {
+            <span class="status-icon status-error">⊗</span>
+          } @else if (i === currentIndex) {
+            <span class="status-icon status-playing">▶</span>
+          } @else {
+            <span class="status-icon status-ready">✓</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</aside>

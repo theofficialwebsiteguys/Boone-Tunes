@@ -1,0 +1,22 @@
+<div class="track-list">
+  @for (track of tracks; track track.spotifyId; let i = $index) {
+    <div class="track-row">
+      <span class="track-num">{{ i + 1 }}</span>
+      @if (track.albumArtUrl) {
+        <img
+          class="album-art"
+          [src]="track.albumArtUrl"
+          [alt]="track.albumName"
+          loading="lazy"
+        />
+      } @else {
+        <div class="album-art album-art-placeholder">♪</div>
+      }
+      <div class="track-info">
+        <span class="track-name">{{ track.name }}</span>
+        <span class="track-sub">{{ track.artists.join(', ') }} · {{ track.albumName }}</span>
+      </div>
+      <span class="duration">{{ formatDuration(track.durationMs) }}</span>
+    </div>
+  }
+</div>

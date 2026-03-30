@@ -1,0 +1,99 @@
+<div class="controls-wrap">
+
+  <!-- Progress bar -->
+  <div class="progress-row">
+    <span class="time">{{ currentTime }}</span>
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="progress"></div>
+      <input
+        class="progress-input"
+        type="range" min="0" max="100"
+        [value]="progress"
+        (input)="onSeek($event)"
+      />
+    </div>
+    <span class="time">{{ totalTime }}</span>
+  </div>
+
+  <!-- Buttons + volume -->
+  <div class="buttons-row">
+
+    <!-- Shuffle -->
+    <button
+      class="ctrl-btn"
+      [class.active]="isShuffle"
+      title="Shuffle"
+      (click)="toggleShuffle.emit()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 3 21 3 21 8"/>
+        <line x1="4" y1="20" x2="21" y2="3"/>
+        <polyline points="21 16 21 21 16 21"/>
+        <line x1="15" y1="15" x2="21" y2="21"/>
+      </svg>
+    </button>
+
+    <!-- Previous -->
+    <button class="ctrl-btn" title="Previous" (click)="prev.emit()">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="19 20 9 12 19 4 19 20"/>
+        <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </button>
+
+    <!-- Play/Pause -->
+    <button class="play-btn" (click)="togglePlay.emit()">
+      @if (isPlaying) {
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <rect x="6" y="4" width="4" height="16"/>
+          <rect x="14" y="4" width="4" height="16"/>
+        </svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+      }
+    </button>
+
+    <!-- Next -->
+    <button class="ctrl-btn" title="Next" (click)="next.emit()">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 4 15 12 5 20 5 4"/>
+        <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </button>
+
+    <!-- Repeat -->
+    <button
+      class="ctrl-btn"
+      [class.active]="isRepeat"
+      title="Repeat"
+      (click)="toggleRepeat.emit()"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="17 1 21 5 17 9"/>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+        <polyline points="7 23 3 19 7 15"/>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+      </svg>
+    </button>
+
+    <!-- Volume -->
+    <div class="volume-row">
+      <svg class="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      </svg>
+      <div class="vol-track">
+        <div class="vol-fill" [style.width.%]="volume"></div>
+        <input
+          class="vol-input"
+          type="range" min="0" max="100"
+          [value]="volume"
+          (input)="onVolume($event)"
+        />
+      </div>
+    </div>
+
+  </div>
+</div>

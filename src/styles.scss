@@ -1,1 +1,114 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* Backgrounds */
+  --bg:           #080912;
+  --surface:      #13142a;
+  --surface-2:    #1a1b35;
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --border:       rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.13);
+
+  /* Text */
+  --text:         #ffffff;
+  --text-muted:   #6b7fa3;
+  --text-dim:     #3d4f6e;
+
+  /* Brand colours */
+  --blue:         #5b7cfa;
+  --purple:       #8b5cf6;
+  --teal:         #22d3ee;
+  --green:        #10b981;
+
+  /* Gradients */
+  --gradient:           linear-gradient(135deg, #5b7cfa 0%, #8b5cf6 50%, #22d3ee 100%);
+  --gradient-blue:      linear-gradient(135deg, #5b7cfa, #8b5cf6);
+  --gradient-teal:      linear-gradient(135deg, #8b5cf6, #22d3ee);
+  --gradient-subtle:    linear-gradient(135deg, rgba(91,124,250,.15), rgba(34,211,238,.08));
+
+  /* Shape */
+  --radius-sm:    8px;
+  --radius:       14px;
+  --radius-lg:    20px;
+  --radius-xl:    28px;
+
+  /* Layout */
+  --navbar-height: 72px;
+
+  /* Transition */
+  --t: 150ms ease;
+  --t-slow: 300ms ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+
+/* ── Gradient-text utilities ────────────────── */
+.gt {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gt-blue {
+  background: var(--gradient-blue);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gt-teal {
+  background: var(--gradient-teal);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Button utilities ───────────────────────── */
+.btn-grad {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--gradient);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--t), transform var(--t);
+}
+.btn-grad:hover  { opacity: .88; transform: translateY(-1px); }
+.btn-grad:active { transform: translateY(0); }
+.btn-grad:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.btn-out {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t);
+}
+.btn-out:hover { background: rgba(255,255,255,.1); }

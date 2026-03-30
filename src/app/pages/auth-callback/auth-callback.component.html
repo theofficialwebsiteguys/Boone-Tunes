@@ -1,0 +1,14 @@
+<div class="callback-page">
+  @if (errorMsg) {
+    <div class="error-box">
+      <span class="error-icon">✕</span>
+      <p>{{ errorMsg }}</p>
+      <a href="/login">Back to login</a>
+    </div>
+  } @else {
+    <div class="spinner-box">
+      <div class="spinner"></div>
+      <p>Connecting your account…</p>
+    </div>
+  }
+</div>

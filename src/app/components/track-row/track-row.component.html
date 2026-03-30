@@ -1,0 +1,49 @@
+<div
+  class="row"
+  [class.hovered]="hovered"
+  (mouseenter)="hovered = true"
+  (mouseleave)="hovered = false"
+>
+  @if (track.albumArtUrl) {
+    <img class="art" [src]="track.albumArtUrl" [alt]="track.albumName" loading="lazy" />
+  } @else {
+    <div class="art art-placeholder">♪</div>
+  }
+
+  <div class="info">
+    <span class="name">{{ track.name }}</span>
+    <span class="artist">{{ track.artists.join(', ') }}</span>
+  </div>
+
+  @if (hovered) {
+    <div class="actions">
+      <button class="action-play btn-grad" (click)="play.emit(track)">
+        ▶ Play
+      </button>
+      <button class="action-btn" title="Add to queue" (click)="queue.emit(track)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Queue
+      </button>
+      <button class="action-btn" title="Save">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+        </svg>
+        Save
+      </button>
+      <button class="action-btn" title="Change video">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="23 7 16 12 23 17 23 7"/>
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+        </svg>
+        Change
+      </button>
+      <button class="action-more" title="More options">⋯</button>
+    </div>
+  } @else {
+    <span class="duration">{{ formatDuration(track.durationMs) }}</span>
+  }
+</div>

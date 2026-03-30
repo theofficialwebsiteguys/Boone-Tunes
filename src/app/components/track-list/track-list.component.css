@@ -1,0 +1,73 @@
+.track-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.track-row {
+  display: grid;
+  grid-template-columns: 2rem 48px 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.track-row:hover {
+  background: var(--surface);
+}
+
+.track-num {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.album-art {
+  width: 48px;
+  height: 48px;
+  border-radius: 3px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.album-art-placeholder {
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--border);
+  font-size: 1rem;
+}
+
+.track-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow: hidden;
+}
+
+.track-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-sub {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.duration {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

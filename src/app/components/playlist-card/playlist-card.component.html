@@ -1,0 +1,20 @@
+<div class="card" (click)="selected.emit(playlist)">
+  <div class="card-image">
+    @if (playlist.imageUrl) {
+      <img [src]="playlist.imageUrl" [alt]="playlist.name" />
+    } @else if (playlist.spotifyPlaylistId === 'liked-songs') {
+      <div class="card-placeholder card-placeholder-heart">♥</div>
+    } @else {
+      <div class="card-placeholder">♪</div>
+    }
+    <div class="card-overlay">
+      <div class="play-btn">▶</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <h3 class="card-title">{{ playlist.name }}</h3>
+    @if (playlist.trackCount !== null) {
+      <p class="card-count">{{ playlist.trackCount }} tracks</p>
+    }
+  </div>
+</div>
