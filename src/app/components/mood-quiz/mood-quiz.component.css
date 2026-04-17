@@ -1,0 +1,479 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Mood Quiz — idle card, quiz flow, results
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Idle card ──────────────────────────────────────────────────────────── */
+
+.idle-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  padding: 2.25rem 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.idle-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.idle-glow-1 {
+  width: 300px; height: 300px;
+  background: rgba(91, 124, 250, 0.12);
+  top: -80px; left: -60px;
+}
+
+.idle-glow-2 {
+  width: 260px; height: 260px;
+  background: rgba(139, 92, 246, 0.1);
+  bottom: -80px; right: -40px;
+}
+
+.idle-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.idle-icon {
+  font-size: 2.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.idle-text {
+  flex: 1;
+  min-width: 220px;
+}
+
+.idle-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.idle-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  max-width: 520px;
+  margin: 0;
+}
+
+.idle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 500px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Quiz card ──────────────────────────────────────────────────────────── */
+
+.quiz-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  padding: 2rem 2.5rem 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Progress */
+.quiz-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.progress-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5b7cfa, #8b5cf6);
+  border-radius: 2px;
+  transition: width 300ms ease;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Question body */
+.quiz-body {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.quiz-body.transitioning {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.quiz-subtitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.quiz-question {
+  font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 1.75rem;
+  line-height: 1.2;
+}
+
+/* Options grid */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+/* When only 3 options (energy step) — use 3 equal columns */
+.options-grid.options-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 600px) {
+  .options-grid, .options-grid.options-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.25rem 0.75rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color var(--t), background var(--t), transform 120ms ease, box-shadow var(--t);
+  font-family: inherit;
+  text-align: center;
+}
+
+.option-card:hover {
+  border-color: rgba(91, 124, 250, 0.5);
+  background: rgba(91, 124, 250, 0.07);
+  transform: translateY(-2px);
+}
+
+.option-card.selected {
+  border-color: rgba(91, 124, 250, 0.8);
+  background: rgba(91, 124, 250, 0.14);
+  box-shadow: 0 0 0 1px rgba(91, 124, 250, 0.25), 0 4px 16px rgba(91, 124, 250, 0.18);
+}
+
+.option-emoji {
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.option-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.option-card.selected .option-label {
+  color: #8baeff;
+}
+
+/* Footer */
+.quiz-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-back-quiz {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.83rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color var(--t);
+}
+.btn-back-quiz:hover { color: var(--text); }
+
+.step-dots {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.step-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-light);
+  transition: background var(--t), transform 150ms ease;
+}
+
+.step-dot.done {
+  background: rgba(91, 124, 250, 0.5);
+  transform: scale(0.85);
+}
+
+.step-dot.active {
+  background: #5b7cfa;
+  transform: scale(1.2);
+}
+
+/* ── Results ─────────────────────────────────────────────────────────────── */
+
+.results-wrap {
+  margin-bottom: 2.5rem;
+}
+
+/* Results header */
+.results-header {
+  margin-bottom: 1.75rem;
+}
+
+.vibe-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(91, 124, 250, 0.1);
+  border: 1px solid rgba(91, 124, 250, 0.25);
+  border-radius: 500px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8baeff;
+  margin-bottom: 0.6rem;
+}
+
+.vibe-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5b7cfa;
+  flex-shrink: 0;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.vibe-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.vibe-name {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.vibe-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.btn-retake {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 0.4rem 0.9rem;
+  border-radius: 500px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--t), border-color var(--t);
+}
+.btn-retake:hover { color: var(--text); border-color: var(--border-light); }
+
+/* Playlists grid — stack on narrow, side by side on wide */
+.playlists-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Virtual playlist card ───────────────────────────────────────────────── */
+
+.vibe-playlist {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.vp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.vp-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.vp-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.vp-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.18rem;
+}
+
+.vp-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.vp-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.vp-play-btn {
+  padding: 0.38rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 500px;
+}
+
+.vp-shuffle-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 500px;
+  border: 1px solid var(--border-light);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color var(--t), border-color var(--t), background var(--t);
+}
+.vp-shuffle-btn:hover {
+  color: var(--text);
+  border-color: rgba(91, 124, 250, 0.5);
+  background: rgba(91, 124, 250, 0.07);
+}
+
+/* Skeleton */
+.vp-skeleton {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-row {
+  height: 60px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Error / empty */
+.vp-error, .vp-empty {
+  padding: 1.5rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.vp-error { color: #f87171; }
+
+/* Tracks */
+.vp-tracks {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Show more */
+.btn-show-more {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--t), background var(--t);
+}
+.btn-show-more:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}

@@ -52,12 +52,45 @@
         </button>
       </div>
 
+      <div class="feature-strip">
+        <div class="feat">
+          <div class="feat-icon feat-blue">♪</div>
+          <div class="feat-text">
+            <span class="feat-title">Spotify Sync</span>
+            <span class="feat-sub">Auto-import playlists</span>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon feat-teal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+          </div>
+          <div class="feat-text">
+            <span class="feat-title">Video Match</span>
+            <span class="feat-sub">YouTube powered</span>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon feat-purple">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+          <div class="feat-text">
+            <span class="feat-title">Seamless</span>
+            <span class="feat-sub">Continuous play</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="hero-right">
       <div class="player-mock">
         <div class="mock-screen">
-          <div class="mock-screen-inner"></div>
+          <img src="assets/boonetunes-cover-photo.png" alt="BooneTunes" class="mock-screen-img" />
           <div class="mock-screen-overlay"></div>
         </div>
         <div class="mock-info">
@@ -84,26 +117,145 @@
     </div>
   </section>
 
-  <!-- Bottom feature badges -->
-  <div class="feature-strip">
-    <div class="feat">
-      <div class="feat-icon feat-blue">♪</div>
-    </div>
-    <div class="feat">
-      <div class="feat-icon feat-teal">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2"/>
-          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-        </svg>
+  <!-- ── Contact / footer ──────────────────────────────────────────────── -->
+  <footer class="contact-footer">
+
+    <div class="cf-inner">
+
+      <!-- Left: copy -->
+      <div class="cf-left">
+        <p class="cf-eyebrow">Get in touch</p>
+        <h2 class="cf-title">Want to build<br>something with us?</h2>
+        <p class="cf-body">
+          BooneTunes is growing and we'd love to hear from people who share the vision.
+          Whether you want to collaborate, pitch a feature, or just talk music tech —
+          drop us a message.
+        </p>
+        <ul class="cf-list">
+          <li>
+            <span class="cf-list-dot cf-dot-blue"></span>
+            Developers &amp; designers looking to collaborate
+          </li>
+          <li>
+            <span class="cf-list-dot cf-dot-teal"></span>
+            Ideas for features or directions for the platform
+          </li>
+          <li>
+            <span class="cf-list-dot cf-dot-purple"></span>
+            Anyone with a genuine interest in the project
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right: form -->
+      <div class="cf-right">
+
+        @if (contactStatus === 'success') {
+          <!-- Success state -->
+          <div class="cf-success">
+            <div class="cf-success-icon">✓</div>
+            <h3>Message received.</h3>
+            <p>Thanks for reaching out — we'll be in touch soon.</p>
+            <button class="cf-again-btn" (click)="resetContact()">Send another</button>
+          </div>
+
+        } @else {
+          <!-- Form -->
+          <form class="cf-form" (ngSubmit)="submitContact()" #contactForm="ngForm" novalidate>
+
+            <div class="cf-row">
+              <div class="cf-field">
+                <label class="cf-label" for="cf-name">Name</label>
+                <input
+                  id="cf-name"
+                  class="cf-input"
+                  type="text"
+                  placeholder="Your name"
+                  [(ngModel)]="form.name"
+                  name="name"
+                  required
+                  maxlength="120"
+                  [disabled]="isSubmitting"
+                />
+              </div>
+              <div class="cf-field">
+                <label class="cf-label" for="cf-email">Email</label>
+                <input
+                  id="cf-email"
+                  class="cf-input"
+                  type="email"
+                  placeholder="you@example.com"
+                  [(ngModel)]="form.email"
+                  name="email"
+                  required
+                  [disabled]="isSubmitting"
+                />
+              </div>
+            </div>
+
+            <div class="cf-field">
+              <label class="cf-label" for="cf-type">What's this about?</label>
+              <select
+                id="cf-type"
+                class="cf-input cf-select"
+                [(ngModel)]="form.type"
+                name="type"
+                required
+                [disabled]="isSubmitting"
+              >
+                <option value="" disabled>Select one…</option>
+                <option value="collaboration">I want to collaborate</option>
+                <option value="idea">I have an idea or feature request</option>
+                <option value="other">Something else</option>
+              </select>
+            </div>
+
+            <div class="cf-field">
+              <label class="cf-label" for="cf-message">Message</label>
+              <textarea
+                id="cf-message"
+                class="cf-input cf-textarea"
+                placeholder="Tell us what's on your mind…"
+                [(ngModel)]="form.message"
+                name="message"
+                required
+                maxlength="2000"
+                rows="5"
+                [disabled]="isSubmitting"
+              ></textarea>
+            </div>
+
+            @if (contactStatus === 'error') {
+              <p class="cf-error">{{ contactError }}</p>
+            }
+
+            <button
+              type="submit"
+              class="btn-grad cf-submit"
+              [disabled]="isSubmitting || !form.name || !form.email || !form.type || !form.message"
+            >
+              @if (isSubmitting) {
+                <span class="cf-spinner"></span> Sending…
+              } @else {
+                Send Message
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              }
+            </button>
+
+          </form>
+        }
+
       </div>
     </div>
-    <div class="feat">
-      <div class="feat-icon feat-purple">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-      </div>
-    </div>
-  </div>
+
+    <!-- Bottom bar -->
+    <!-- <div class="cf-bottom">
+      <span class="cf-copy">© {{ currentYear }} BooneTunes. Built with ♥ for music.</span>
+    </div> -->
+
+  </footer>
 
 </div>

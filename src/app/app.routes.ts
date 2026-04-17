@@ -30,5 +30,11 @@ export const routes: Routes = [
       import('./pages/player/player.component').then(m => m.PlayerComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'settings',
+    loadComponent: () =>
+      import('./pages/settings/settings.component').then(m => m.SettingsComponent),
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: '' }
 ];

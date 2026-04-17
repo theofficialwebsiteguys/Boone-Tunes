@@ -1,0 +1,493 @@
+<div class="settings-page">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="settings-sidebar">
+
+    <div class="sidebar-header">
+      <button class="back-btn" (click)="goBack()">
+        <span class="back-arrow">←</span>
+        <span class="logo-icon">♪</span>
+        <span class="logo-text">BooneTunes</span>
+      </button>
+    </div>
+
+    @if (profile) {
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ avatarLetter }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ profile.displayName || profile.email }}</span>
+          <span class="sidebar-email">{{ profile.email }}</span>
+        </div>
+      </div>
+    } @else {
+      <div class="sidebar-user sidebar-user--loading">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-lines">
+          <div class="skeleton-line skeleton-line--long"></div>
+          <div class="skeleton-line skeleton-line--short"></div>
+        </div>
+      </div>
+    }
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.id) {
+        <button
+          class="nav-item"
+          [class.active]="activeTab === item.id"
+          (click)="setTab(item.id)"
+        >
+          <span class="nav-icon material-symbols-rounded">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="signout-btn" (click)="logout()">
+        <span class="material-symbols-rounded">logout</span>
+        Sign Out
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Content ─────────────────────────────────────────────────────────── -->
+  <main class="settings-content">
+
+    <!-- ── Profile ─────────────────────────────────────────────────────── -->
+    @if (activeTab === 'profile') {
+      <div class="content-section">
+
+        <div class="section-header">
+          <h1 class="section-title">Profile</h1>
+          <p class="section-sub">Manage your personal information and account credentials.</p>
+        </div>
+
+        <!-- Account overview -->
+        <div class="card">
+          <div class="profile-overview">
+            <div class="profile-avatar-lg">{{ avatarLetter }}</div>
+            <div class="profile-overview-info">
+              <span class="overview-name">{{ profile?.displayName || profile?.email || '...' }}</span>
+              <span class="overview-email">{{ profile?.email }}</span>
+              <span class="overview-since">Member since {{ memberSince }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit display name -->
+        <div class="card">
+          <h2 class="card-title">Display Name</h2>
+          <p class="card-sub">This name appears across the app. Leave blank to use your email.</p>
+          <div class="input-row">
+            <input
+              class="settings-input"
+              type="text"
+              placeholder="Your display name"
+              maxlength="60"
+              [(ngModel)]="editDisplayName"
+            />
+            <button
+              class="btn-save"
+              [class.btn-save--saved]="nameSaveStatus === 'saved'"
+              [class.btn-save--error]="nameSaveStatus === 'error'"
+              [disabled]="nameSaveStatus === 'saving'"
+              (click)="saveDisplayName()"
+            >
+              @if (nameSaveStatus === 'saving') { <span class="spinner"></span> }
+              @else if (nameSaveStatus === 'saved') { Saved! }
+              @else if (nameSaveStatus === 'error') { Error }
+              @else { Save }
+            </button>
+          </div>
+          @if (nameSaveError) {
+            <p class="field-error">{{ nameSaveError }}</p>
+          }
+        </div>
+
+        <!-- Change password -->
+        @if (profile?.hasPassword) {
+          <div class="card">
+            <h2 class="card-title">Change Password</h2>
+            <p class="card-sub">Use a strong password you don't use elsewhere.</p>
+            <div class="field-stack">
+              <div class="field">
+                <label class="field-label">Current Password</label>
+                <input class="settings-input" type="password" placeholder="••••••••" [(ngModel)]="pwCurrent" />
+              </div>
+              <div class="field">
+                <label class="field-label">New Password</label>
+                <input class="settings-input" type="password" placeholder="••••••••" [(ngModel)]="pwNew" />
+              </div>
+              <div class="field">
+                <label class="field-label">Confirm New Password</label>
+                <input class="settings-input" type="password" placeholder="••••••••" [(ngModel)]="pwConfirm" />
+              </div>
+            </div>
+            @if (pwError) {
+              <p class="field-error">{{ pwError }}</p>
+            }
+            <div class="card-actions">
+              <button
+                class="btn-save"
+                [class.btn-save--saved]="pwStatus === 'saved'"
+                [class.btn-save--error]="pwStatus === 'error'"
+                [disabled]="pwStatus === 'saving'"
+                (click)="changePassword()"
+              >
+                @if (pwStatus === 'saving') { <span class="spinner"></span> }
+                @else if (pwStatus === 'saved') { Updated! }
+                @else if (pwStatus === 'error') { Failed }
+                @else { Update Password }
+              </button>
+            </div>
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- ── Playback ─────────────────────────────────────────────────────── -->
+    @if (activeTab === 'playback') {
+      <div class="content-section">
+
+        <div class="section-header">
+          <h1 class="section-title">Playback</h1>
+          <p class="section-sub">Customize how music plays on your device.</p>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Playback Preferences</h2>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-label">Volume</span>
+              <span class="pref-sub">Current playback volume</span>
+            </div>
+            <div class="volume-control">
+              <span class="volume-icon material-symbols-rounded">volume_down</span>
+              <input
+                class="volume-slider"
+                type="range"
+                min="0" max="100" step="1"
+                [(ngModel)]="volumeValue"
+                (input)="onVolumeChange()"
+              />
+              <span class="volume-icon material-symbols-rounded">volume_up</span>
+              <span class="volume-value">{{ volumeValue }}</span>
+            </div>
+          </div>
+
+          <div class="pref-divider"></div>
+
+          <div class="pref-row pref-row--coming-soon">
+            <div class="pref-info">
+              <span class="pref-label">Crossfade</span>
+              <span class="pref-sub">Smoothly blend between tracks</span>
+            </div>
+            <span class="badge-soon">Coming Soon</span>
+          </div>
+
+          <div class="pref-divider"></div>
+
+          <div class="pref-row pref-row--coming-soon">
+            <div class="pref-info">
+              <span class="pref-label">Audio Quality</span>
+              <span class="pref-sub">Adjust streaming quality</span>
+            </div>
+            <span class="badge-soon">Coming Soon</span>
+          </div>
+
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Connections ──────────────────────────────────────────────────── -->
+    @if (activeTab === 'connections') {
+      <div class="content-section">
+
+        <div class="section-header">
+          <h1 class="section-title">Connections</h1>
+          <p class="section-sub">Manage linked services that power your BooneTunes experience.</p>
+        </div>
+
+        <!-- Spotify -->
+        <div class="card connection-card">
+          <div class="connection-header">
+            <div class="connection-logo connection-logo--spotify">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            </div>
+            <div class="connection-info">
+              <span class="connection-name">Spotify</span>
+              <span class="connection-desc">Your playlists and library sync from Spotify.</span>
+            </div>
+            <div class="connection-status" [class.connected]="profile?.spotifyConnected">
+              <span class="status-dot"></span>
+              {{ profile?.spotifyConnected ? 'Connected' : 'Not Connected' }}
+            </div>
+          </div>
+          <div class="connection-actions">
+            <a class="btn-connect-service btn-connect-service--spotify" [href]="spotifyConnectUrl">
+              {{ profile?.spotifyConnected ? 'Reconnect Spotify' : 'Connect Spotify' }}
+            </a>
+          </div>
+        </div>
+
+        <!-- Google -->
+        <div class="card connection-card">
+          <div class="connection-header">
+            <div class="connection-logo connection-logo--google">
+              <svg viewBox="0 0 24 24" width="22" height="22"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            </div>
+            <div class="connection-info">
+              <span class="connection-name">Google</span>
+              <span class="connection-desc">Sign in faster using your Google account.</span>
+            </div>
+            <div class="connection-status" [class.connected]="profile?.googleConnected">
+              <span class="status-dot"></span>
+              {{ profile?.googleConnected ? 'Connected' : 'Not Connected' }}
+            </div>
+          </div>
+          <div class="connection-actions">
+            <a class="btn-connect-service btn-connect-service--google" [href]="googleConnectUrl">
+              {{ profile?.googleConnected ? 'Manage Google' : 'Connect Google' }}
+            </a>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Appearance ───────────────────────────────────────────────────── -->
+    @if (activeTab === 'appearance') {
+      <div class="content-section">
+
+        <div class="section-header">
+          <h1 class="section-title">Appearance</h1>
+          <p class="section-sub">Personalize the look and feel of BooneTunes.</p>
+        </div>
+
+        <div class="card">
+          <div class="appearance-coming">
+            <div class="appearance-palette">
+              <span class="palette-dot palette-dot--blue"></span>
+              <span class="palette-dot palette-dot--purple"></span>
+              <span class="palette-dot palette-dot--teal"></span>
+              <span class="palette-dot palette-dot--green"></span>
+            </div>
+            <h2 class="appearance-title">Custom Themes</h2>
+            <p class="appearance-desc">
+              Choose from curated color themes and personalize your player experience.
+              Custom theme support is on our roadmap — stay tuned.
+            </p>
+            <span class="badge-soon badge-soon--lg">Coming Soon</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Current Theme</h2>
+          <div class="theme-preview">
+            <div class="theme-swatch">
+              <div class="swatch-row">
+                <div class="swatch" style="background:var(--bg)" title="Background"></div>
+                <div class="swatch" style="background:var(--surface)" title="Surface"></div>
+                <div class="swatch" style="background:var(--surface-2)" title="Surface 2"></div>
+              </div>
+              <div class="swatch-row">
+                <div class="swatch" style="background:var(--blue)" title="Blue"></div>
+                <div class="swatch" style="background:var(--purple)" title="Purple"></div>
+                <div class="swatch" style="background:var(--teal)" title="Teal"></div>
+              </div>
+            </div>
+            <span class="theme-name">Deep Space <span class="badge-active">Active</span></span>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Privacy ──────────────────────────────────────────────────────── -->
+    @if (activeTab === 'privacy') {
+      <div class="content-section">
+
+        <div class="section-header">
+          <h1 class="section-title">Privacy &amp; Data</h1>
+          <p class="section-sub">Understand what we store and control your account data.</p>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">What We Store</h2>
+          <ul class="data-list">
+            <li><span class="data-dot data-dot--blue"></span>Your Spotify playlist and track metadata (synced on demand)</li>
+            <li><span class="data-dot data-dot--purple"></span>Account credentials (email &amp; hashed password if applicable)</li>
+            <li><span class="data-dot data-dot--teal"></span>OAuth tokens for Spotify and Google (server-side, encrypted at rest)</li>
+            <li><span class="data-dot data-dot--blue"></span>Playback queue state (stored locally in your browser only)</li>
+          </ul>
+          <p class="data-note">We never sell your data or share it with third parties outside of the services you explicitly connect.</p>
+        </div>
+
+        <div class="card card--danger">
+          <div class="danger-header">
+            <span class="material-symbols-rounded danger-icon">warning</span>
+            <h2 class="card-title card-title--danger">Danger Zone</h2>
+          </div>
+          <p class="card-sub">
+            Permanently delete your BooneTunes account and all associated data.
+            This action <strong>cannot be undone</strong>.
+          </p>
+
+          @if (!showDeleteConfirm) {
+            <button class="btn-danger" (click)="showDeleteConfirm = true">Delete My Account</button>
+          } @else {
+            <div class="delete-confirm">
+              @if (profile?.hasPassword) {
+                <div class="field">
+                  <label class="field-label">Enter your password to confirm</label>
+                  <input
+                    class="settings-input settings-input--danger"
+                    type="password"
+                    placeholder="••••••••"
+                    [(ngModel)]="deletePassword"
+                  />
+                </div>
+              } @else {
+                <p class="delete-confirm-text">Are you absolutely sure? This will permanently delete your account.</p>
+              }
+              @if (deleteError) {
+                <p class="field-error">{{ deleteError }}</p>
+              }
+              <div class="delete-actions">
+                <button class="btn-ghost" (click)="showDeleteConfirm = false; deletePassword = ''; deleteError = ''">
+                  Cancel
+                </button>
+                <button
+                  class="btn-danger"
+                  [disabled]="deleteStatus === 'deleting'"
+                  (click)="confirmDelete()"
+                >
+                  @if (deleteStatus === 'deleting') { <span class="spinner"></span> Deleting... }
+                  @else { Yes, Delete My Account }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Support ──────────────────────────────────────────────────────── -->
+    @if (activeTab === 'support') {
+      <div class="content-section">
+
+        <div class="section-header">
+          <h1 class="section-title">Support</h1>
+          <p class="section-sub">Have an idea, want to collaborate, or need help? We'd love to hear from you.</p>
+        </div>
+
+        <div class="support-grid">
+
+          <!-- Left copy -->
+          <div class="support-copy">
+            <p class="support-eyebrow">Get in touch</p>
+            <h2 class="support-heading">Let's build something together</h2>
+            <p class="support-body">
+              BooneTunes is always evolving. Whether you've got a feature idea,
+              spotted a bug, or want to explore a collaboration — reach out.
+            </p>
+            <ul class="support-list">
+              <li><span class="support-dot support-dot--blue"></span>Feature requests &amp; ideas</li>
+              <li><span class="support-dot support-dot--teal"></span>Bug reports</li>
+              <li><span class="support-dot support-dot--purple"></span>Partnership &amp; collaboration</li>
+            </ul>
+          </div>
+
+          <!-- Contact form -->
+          <div class="card support-form-card">
+            @if (contactStatus === 'success') {
+              <div class="contact-success">
+                <div class="contact-success-icon">✓</div>
+                <h3>Message sent!</h3>
+                <p>Thanks for reaching out. We'll be in touch soon.</p>
+                <button class="btn-ghost" (click)="resetContact()">Send another</button>
+              </div>
+            } @else {
+              <form class="contact-form" (ngSubmit)="submitContact()">
+
+                <div class="form-row">
+                  <div class="field">
+                    <label class="field-label">Name</label>
+                    <input
+                      class="settings-input"
+                      type="text"
+                      placeholder="Your name"
+                      [(ngModel)]="contactForm.name"
+                      name="cfName"
+                      required
+                      maxlength="120"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="field-label">Email</label>
+                    <input
+                      class="settings-input"
+                      type="email"
+                      placeholder="you@example.com"
+                      [(ngModel)]="contactForm.email"
+                      name="cfEmail"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="field-label">Type of Inquiry</label>
+                  <select class="settings-input settings-select" [(ngModel)]="contactForm.type" name="cfType" required>
+                    <option value="" disabled>Select a type...</option>
+                    <option value="feature">Feature request</option>
+                    <option value="bug">Bug report</option>
+                    <option value="collab">Collaboration</option>
+                    <option value="general">General feedback</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label class="field-label">Message</label>
+                  <textarea
+                    class="settings-input settings-textarea"
+                    placeholder="Tell us what's on your mind..."
+                    [(ngModel)]="contactForm.message"
+                    name="cfMessage"
+                    required
+                    maxlength="2000"
+                    rows="5"
+                  ></textarea>
+                </div>
+
+                @if (contactStatus === 'error') {
+                  <p class="field-error">{{ contactError }}</p>
+                }
+
+                <button
+                  type="submit"
+                  class="btn-save btn-save--full"
+                  [disabled]="contactStatus === 'submitting'"
+                >
+                  @if (contactStatus === 'submitting') { <span class="spinner"></span> Sending... }
+                  @else { Send Message }
+                </button>
+
+              </form>
+            }
+          </div>
+
+        </div>
+
+      </div>
+    }
+
+  </main>
+
+</div>

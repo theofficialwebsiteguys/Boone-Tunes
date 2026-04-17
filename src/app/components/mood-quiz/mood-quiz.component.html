@@ -1,0 +1,179 @@
+<!-- ── Idle: invitation card ──────────────────────────────────────────── -->
+@if (phase === 'idle') {
+  <div class="idle-card">
+    <div class="idle-glow idle-glow-1"></div>
+    <div class="idle-glow idle-glow-2"></div>
+
+    <div class="idle-inner">
+      <div class="idle-icon">🎧</div>
+      <div class="idle-text">
+        <h2 class="idle-title">Not sure what to listen to?</h2>
+        <p class="idle-desc">
+          Answer five quick questions and we'll build three personalised playlists
+          based on your mood, scene, and sound — right now.
+        </p>
+      </div>
+      <button class="btn-grad idle-btn" (click)="startQuiz()">
+        Find My Vibe
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ── Quiz: step-by-step questions ──────────────────────────────────────── -->
+@if (phase === 'quiz') {
+  <div class="quiz-card">
+
+    <!-- Progress bar -->
+    <div class="quiz-progress">
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="((step) / totalSteps) * 100"></div>
+      </div>
+      <span class="progress-label">{{ step + 1 }} of {{ totalSteps }}</span>
+    </div>
+
+    <!-- Question body -->
+    <div class="quiz-body" [class.transitioning]="transitioning">
+      <p class="quiz-subtitle">{{ currentQuestion.subtitle }}</p>
+      <h2 class="quiz-question">{{ currentQuestion.question }}</h2>
+
+      <!-- Options grid -->
+      <div class="options-grid" [class.options-3]="currentQuestion.options.length === 3">
+        @for (opt of currentQuestion.options; track opt.id) {
+          <button
+            class="option-card"
+            [class.selected]="answers[currentQuestion.id] === opt.id"
+            (click)="selectOption(opt.id)"
+          >
+            <span class="option-emoji">{{ opt.emoji }}</span>
+            <span class="option-label">{{ opt.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Footer nav -->
+    <div class="quiz-footer">
+      @if (step > 0) {
+        <button class="btn-back-quiz" (click)="goBack()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back
+        </button>
+      } @else {
+        <div></div>
+      }
+
+      <div class="step-dots">
+        @for (dot of stepDots; track dot) {
+          <span class="step-dot" [class.active]="dot === step" [class.done]="dot < step"></span>
+        }
+      </div>
+    </div>
+
+  </div>
+}
+
+<!-- ── Results: three virtual playlists ──────────────────────────────────── -->
+@if (phase === 'results') {
+  <div class="results-wrap">
+
+    <!-- Results header -->
+    <div class="results-header">
+      <div class="vibe-badge">
+        <span class="vibe-dot"></span>
+        Your Vibe
+      </div>
+      <div class="vibe-title-row">
+        <h2 class="vibe-name">{{ vibeLabel }}</h2>
+        <button class="btn-retake" (click)="retake()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+          </svg>
+          Change Vibe
+        </button>
+      </div>
+      <p class="vibe-subtitle">{{ vibeSubtitle }}</p>
+    </div>
+
+    <!-- Playlist sections -->
+    <div class="playlists-grid">
+      @for (pl of playlists; track pl.id) {
+        <div class="vibe-playlist">
+
+          <!-- Playlist header -->
+          <div class="vp-header">
+            <div class="vp-title-group">
+              <span class="vp-emoji">{{ pl.emoji }}</span>
+              <div>
+                <h3 class="vp-name">{{ pl.name }}</h3>
+                <p class="vp-desc">{{ pl.description }}</p>
+              </div>
+            </div>
+            @if (!pl.loading && !pl.error && pl.tracks.length) {
+              <div class="vp-actions">
+                <button class="btn-grad vp-play-btn" (click)="playAll(pl)">
+                  ▶ Play All
+                </button>
+                <button class="vp-shuffle-btn" (click)="shuffleAll(pl)" title="Shuffle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                    <polyline points="16 3 21 3 21 8"/>
+                    <line x1="4" y1="20" x2="21" y2="3"/>
+                    <polyline points="21 16 21 21 16 21"/>
+                    <line x1="15" y1="15" x2="21" y2="21"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Loading skeleton -->
+          @if (pl.loading) {
+            <div class="vp-skeleton">
+              @for (n of [1,2,3,4,5]; track n) {
+                <div class="skeleton-row"></div>
+              }
+            </div>
+          }
+
+          <!-- Error -->
+          @else if (pl.error) {
+            <p class="vp-error">Couldn't load tracks for this vibe. Try again later.</p>
+          }
+
+          <!-- No results -->
+          @else if (pl.tracks.length === 0) {
+            <p class="vp-empty">No tracks found — try a different vibe.</p>
+          }
+
+          <!-- Tracks -->
+          @else {
+            <div class="vp-tracks">
+              @for (track of visibleTracks(pl); track track.spotifyId; let i = $index) {
+                <app-track-row
+                  [track]="track"
+                  [index]="i"
+                  (play)="playTrack(track)"
+                  (queue)="addToQueue(track)"
+                ></app-track-row>
+              }
+            </div>
+
+            @if (pl.tracks.length > 5) {
+              <button class="btn-show-more" (click)="pl.showAll = !pl.showAll">
+                {{ pl.showAll ? 'Show less' : 'Show ' + (pl.tracks.length - 5) + ' more' }}
+              </button>
+            }
+          }
+
+        </div>
+      }
+    </div>
+
+  </div>
+}

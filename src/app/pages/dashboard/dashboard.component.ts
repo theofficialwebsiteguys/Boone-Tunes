@@ -5,27 +5,30 @@ import { ApiService } from '../../services/api.service';
 import { PlaylistService } from '../../services/playlist.service';
 import { PlayerService } from '../../services/player.service';
 import { SearchService } from '../../services/search.service';
+import { YoutubeService, YoutubeVideo } from '../../services/youtube.service';
 import { User } from '../../models/user.model';
 import { Playlist } from '../../models/playlist.model';
 import { Track } from '../../models/track.model';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { PlaylistCardComponent } from '../../components/playlist-card/playlist-card.component';
 import { TrackRowComponent } from '../../components/track-row/track-row.component';
+import { MoodQuizComponent } from '../../components/mood-quiz/mood-quiz.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [NavbarComponent, PlaylistCardComponent, TrackRowComponent],
+  imports: [NavbarComponent, PlaylistCardComponent, TrackRowComponent, MoodQuizComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-  private auth     = inject(AuthService);
-  private api      = inject(ApiService);
-  private plSvc    = inject(PlaylistService);
-  private player   = inject(PlayerService);
+  private auth      = inject(AuthService);
+  private api       = inject(ApiService);
+  private plSvc     = inject(PlaylistService);
+  private player    = inject(PlayerService);
   private searchSvc = inject(SearchService);
-  private router   = inject(Router);
+  private ytSvc     = inject(YoutubeService);
+  private router    = inject(Router);
 
   user: User | null = null;
   playlists: Playlist[] = [];
@@ -35,6 +38,11 @@ export class DashboardComponent implements OnInit {
   searchResults: Track[] = [];
   loadingSearch = false;
   searchError = '';
+
+  ytResults: YoutubeVideo[] = [];
+  loadingYt = false;
+  ytError = '';
+  ytSearchActive = false;
 
   loadingPlaylists = true;
   playlistsError = '';
@@ -79,6 +87,10 @@ export class DashboardComponent implements OnInit {
 
   onSearch(query: string): void {
     this.searchQuery = query;
+    // Reset YouTube results whenever the Spotify query changes
+    this.ytResults = [];
+    this.ytError = '';
+    this.ytSearchActive = false;
     if (!query) {
       this.searchResults = [];
       return;
@@ -97,9 +109,30 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  searchYouTube(): void {
+    if (!this.searchQuery || this.loadingYt) return;
+    this.ytSearchActive = true;
+    this.loadingYt = true;
+    this.ytError = '';
+    this.ytResults = [];
+    this.ytSvc.directSearch(this.searchQuery).subscribe({
+      next: res => {
+        this.ytResults = res.videos;
+        this.loadingYt = false;
+      },
+      error: () => {
+        this.ytError = 'YouTube search failed. Please try again.';
+        this.loadingYt = false;
+      }
+    });
+  }
+
+  addYtVideoToQueue(video: YoutubeVideo): void {
+    this.player.addYouTubeVideoToQueue(video);
+  }
+
   playTrack(track: Track): void {
-    const rest = this.searchResults.filter(t => t !== track);
-    this.player.playTrack(track, rest);
+    this.player.appendTracksToQueue([track]);
   }
 
   addToQueue(track: Track): void {

@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 1rem 1.5rem;
+  padding: 1rem 2rem;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -30,7 +30,6 @@
   transition: color var(--t);
   flex-shrink: 0;
 }
-
 .btn-back:hover { color: var(--text); }
 
 .now-playing-pill {
@@ -56,7 +55,6 @@
   flex-shrink: 0;
   animation: blink 2s ease-in-out infinite;
 }
-
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.3; }
@@ -84,50 +82,24 @@
   overflow: hidden;
 }
 
-.video-inner {
+/* ── Sentinel (iframe is positioned here by AppComponent) ── */
+.video-slot {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at 30% 60%,
-    rgba(139, 92, 246, 0.4) 0%,
-    rgba(91, 124, 250, 0.18) 40%,
-    #050612 100%
-  );
 }
 
-.video-gradient {
+/* ── YouTube overlay ─────────────────────
+   Sits above the iframe, blocking YouTube's
+   native hover controls so our custom UI
+   is the only interface the user sees.     */
+.yt-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 70% 40%, rgba(34,211,238,0.2), transparent 55%);
+  z-index: 2;
+  background: transparent;
 }
 
-.video-track-info {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 2.5rem;
-}
-
-.vt-artist {
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 0.35rem;
-  letter-spacing: 0.5px;
-}
-
-.vt-name {
-  font-size: clamp(1.6rem, 3vw, 2.5rem);
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-  line-height: 1.15;
-  margin-bottom: 0.5rem;
-}
-
-.vt-album {
-  font-size: 0.82rem;
-  color: rgba(255,255,255,0.45);
-}
-
+/* ── Placeholder states ──────────────────── */
 .video-empty {
   position: absolute;
   inset: 0;
@@ -138,14 +110,106 @@
   gap: 1rem;
   color: var(--text-dim);
 }
+.video-empty-icon { font-size: 3.5rem; opacity: 0.3; }
+.video-empty p    { font-size: 0.9rem; }
 
-.video-empty-icon {
-  font-size: 3.5rem;
-  opacity: 0.3;
+/* ── Loading overlay (on top of old video) ─ */
+.video-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: rgba(5,6,18,0.6);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255,255,255,0.08);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* ── Video alternatives bar ─────────────────
+   Lives below the track info, above controls.
+   Completely outside the video-screen so it
+   never blocks the iframe.                   */
+.alts-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
 }
 
-.video-empty p {
+.alts-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.alts-list {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.alts-list::-webkit-scrollbar { display: none; }
+
+.alt-btn {
+  position: relative;
+  width: 80px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--surface-2);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color var(--t), opacity var(--t);
+}
+.alt-btn:hover        { opacity: 0.85; }
+.alt-btn.alt-active   { border-color: var(--blue); }
+
+.alt-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.alt-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
   font-size: 0.9rem;
+}
+
+.alt-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
 }
 
 /* ── Controls bar ───────────────────────── */

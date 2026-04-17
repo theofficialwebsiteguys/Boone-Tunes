@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/routes/**)",
+      "Read(//d/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/controllers/**)",
+      "Bash(grep -E \"\\\\.js$|server\\\\.|routes\")",
+      "Bash(xargs wc:*)",
+      "Bash(find /d/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server -name \"*.js\" ! -path \"*/node_modules/*\" ! -path \"*/migrations/*\" -exec grep -l \"queue\\\\|Queue\\\\|shuffle\\\\|Shuffle\" {} \\\\;)",
+      "Bash(npm install:*)",
+      "Bash(npx ng:*)"
+    ]
+  }
+}

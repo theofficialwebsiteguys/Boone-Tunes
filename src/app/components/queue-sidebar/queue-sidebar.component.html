@@ -1,40 +1,123 @@
 <aside class="sidebar">
+
+  <!-- Header -->
   <div class="sidebar-header">
     <div>
-      <h3>Up Next</h3>
-      <p class="subtitle">{{ queue.length }} tracks in queue</p>
+      <h3>Queue</h3>
+      <p class="subtitle">{{ queue.length }} tracks</p>
     </div>
-    <button class="btn-clear" (click)="clearQueue.emit()">Clear</button>
+    <div class="header-actions">
+      <button class="btn-clear" (click)="clearQueue.emit()">Clear</button>
+    </div>
   </div>
 
-  <div class="queue-list">
-    @for (item of queue; track item.track.spotifyId; let i = $index) {
+  <div class="queue-scroll">
+
+    <!-- ── Now Playing ─────────────────────── -->
+    @if (currentItem) {
+      <div class="section-label">Now Playing</div>
       <div
-        class="queue-item"
-        [class.active]="i === currentIndex"
-        (click)="playAtIndex.emit(i)"
+        class="queue-item active now-playing"
+        (click)="playAtIndex.emit(currentIndex)"
       >
-        @if (item.track.albumArtUrl) {
-          <img class="q-art" [src]="item.track.albumArtUrl" [alt]="item.track.albumName" loading="lazy" />
+        @if (currentItem.track.albumArtUrl) {
+          <img class="q-art" [src]="currentItem.track.albumArtUrl" [alt]="currentItem.track.albumName" loading="lazy" />
         } @else {
           <div class="q-art q-art-placeholder">♪</div>
         }
 
         <div class="q-info">
-          <span class="q-name">{{ item.track.name }}</span>
-          <span class="q-artist">{{ item.track.artists.join(', ') }}</span>
+          <span class="q-name">{{ currentItem.track.name }}</span>
+          <span class="q-artist">{{ currentItem.track.artists.join(', ') }}</span>
         </div>
 
         <div class="q-status">
-          @if (item.status === 'error') {
-            <span class="status-icon status-error">⊗</span>
-          } @else if (i === currentIndex) {
-            <span class="status-icon status-playing">▶</span>
+          @if (currentItem.status === 'error') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" width="18" height="18">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
           } @else {
-            <span class="status-icon status-ready">✓</span>
+            <svg viewBox="0 0 18 18" width="18" height="18" class="icon-playing">
+              <rect class="bar bar1" x="1" y="6" width="3" height="12" rx="1.5"/>
+              <rect class="bar bar2" x="7" y="2" width="3" height="16" rx="1.5"/>
+              <rect class="bar bar3" x="13" y="4" width="3" height="14" rx="1.5"/>
+            </svg>
           }
         </div>
       </div>
     }
+
+    <!-- ── Up Next ──────────────────────────── -->
+    @if (upNext.length > 0) {
+      <div class="section-label section-label-upnext">
+        Up Next
+        <span class="up-next-count">{{ upNext.length }}</span>
+      </div>
+
+      <div
+        cdkDropList
+        [cdkDropListData]="upNext"
+        (cdkDropListDropped)="onDrop($event)"
+        class="up-next-list"
+      >
+        @for (item of upNext; track item.track.spotifyId; let i = $index) {
+          <div
+            cdkDrag
+            class="queue-item draggable"
+            (click)="playAtIndex.emit(currentIndex + 1 + i)"
+          >
+            <!-- Drag handle -->
+            <div class="drag-handle" cdkDragHandle>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <circle cx="9" cy="5"  r="1.5"/>
+                <circle cx="9" cy="12" r="1.5"/>
+                <circle cx="9" cy="19" r="1.5"/>
+                <circle cx="15" cy="5"  r="1.5"/>
+                <circle cx="15" cy="12" r="1.5"/>
+                <circle cx="15" cy="19" r="1.5"/>
+              </svg>
+            </div>
+
+            @if (item.track.albumArtUrl) {
+              <img class="q-art" [src]="item.track.albumArtUrl" [alt]="item.track.albumName" loading="lazy" />
+            } @else {
+              <div class="q-art q-art-placeholder">♪</div>
+            }
+
+            <div class="q-info">
+              <span class="q-name">{{ item.track.name }}</span>
+              <span class="q-artist">{{ item.track.artists.join(', ') }}</span>
+            </div>
+
+            <!-- Remove button -->
+            <button
+              class="btn-remove"
+              title="Remove from queue"
+              (click)="onRemove($event, currentIndex + 1 + i)"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+
+            <!-- Drag placeholder -->
+            <div *cdkDragPlaceholder class="drag-placeholder"></div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (!currentItem && upNext.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">♪</span>
+        <p>Your queue is empty</p>
+        <p class="empty-hint">Play or shuffle a playlist to get started</p>
+      </div>
+    }
+
   </div>
 </aside>

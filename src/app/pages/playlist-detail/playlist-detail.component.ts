@@ -47,21 +47,20 @@ export class PlaylistDetailComponent implements OnInit {
     });
   }
 
-  playAll(startIndex = 0): void {
+  playAll(): void {
     if (this.tracks.length) {
-      this.player.playTracks(this.tracks, startIndex);
+      this.player.appendTracksToQueue(this.tracks);
     }
   }
 
   playShuffle(): void {
-    if (!this.tracks.length) return;
-    const idx = Math.floor(Math.random() * this.tracks.length);
-    this.player.playTracks([...this.tracks], idx);
+    if (this.tracks.length) {
+      this.player.shuffleAndAppendToQueue(this.tracks);
+    }
   }
 
   playTrack(track: Track): void {
-    const idx = this.tracks.indexOf(track);
-    this.player.playTracks(this.tracks, idx >= 0 ? idx : 0);
+    this.player.appendTracksToQueue([track]);
   }
 
   addToQueue(track: Track): void {

@@ -56,6 +56,12 @@
   margin-left: auto;
 }
 
+/* ── Avatar + dropdown ──────────────────────────────────────────────────── */
+
+.avatar-wrapper {
+  position: relative;
+}
+
 .avatar {
   width: 38px;
   height: 38px;
@@ -68,20 +74,95 @@
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color var(--t), box-shadow var(--t);
+  font-family: inherit;
 }
 
-.btn-logout {
+.avatar:hover,
+.avatar-wrapper.open .avatar {
+  border-color: rgba(91, 124, 250, 0.6);
+  box-shadow: 0 0 0 3px rgba(91, 124, 250, 0.15);
+}
+
+.avatar-dropdown {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  min-width: 210px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 200;
+  animation: dropdown-in 0.15s ease;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.dropdown-user {
+  padding: 0.85rem 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dropdown-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
   background: none;
   border: none;
-  color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 0;
-  transition: color var(--t);
+  transition: background var(--t), color var(--t);
+  text-align: left;
 }
 
-.btn-logout:hover {
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text);
+}
+
+.dropdown-item--danger:hover {
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+}
+
+.dropdown-item-icon {
+  font-size: 1rem;
+  font-variation-settings: 'FILL' 0, 'wght' 300;
 }

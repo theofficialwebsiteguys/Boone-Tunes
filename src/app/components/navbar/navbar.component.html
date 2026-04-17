@@ -6,16 +6,36 @@
 
   @if (showSearch) {
     <div class="navbar-search">
-      <app-search-bar
-        (queryChange)="queryChange.emit($event)"
-      />
+      <app-search-bar (queryChange)="queryChange.emit($event)" />
     </div>
   }
 
   <div class="navbar-right">
     @if (user) {
-      <div class="avatar">{{ avatarLetter }}</div>
-      <button class="btn-logout" (click)="logoutClick.emit()">Logout</button>
+      <div class="avatar-wrapper" [class.open]="dropdownOpen">
+        <button class="avatar" (click)="toggleDropdown()" [attr.aria-expanded]="dropdownOpen" aria-label="Account menu">
+          {{ avatarLetter }}
+        </button>
+
+        @if (dropdownOpen) {
+          <div class="avatar-dropdown">
+            <div class="dropdown-user">
+              <span class="dropdown-name">{{ user.displayName || user.email }}</span>
+              <span class="dropdown-email">{{ user.email }}</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" (click)="goToSettings()">
+              <span class="dropdown-item-icon material-symbols-rounded">settings</span>
+              Settings
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item dropdown-item--danger" (click)="onLogout()">
+              <span class="dropdown-item-icon material-symbols-rounded">logout</span>
+              Sign Out
+            </button>
+          </div>
+        }
+      </div>
     }
   </div>
 </nav>

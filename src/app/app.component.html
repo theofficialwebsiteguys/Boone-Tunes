@@ -1,1 +1,20 @@
 <router-outlet />
+<app-mini-player />
+
+<!--
+  YouTube iframe lives here permanently — NEVER conditionally rendered.
+  Destroying and recreating the component on videoId change kills the player.
+  YoutubePlayerComponent handles null videoId gracefully (just doesn't load).
+  AppComponent positions it over the active sentinel via getBoundingClientRect + rAF.
+  When no sentinel is active (iframeRect null) it sits off-screen at -9999px.
+-->
+<app-youtube-player
+  [videoId]="currentVideoId"
+  [playing]="isPlaying"
+  [volume]="volume"
+  [style]="iframeStyle"
+  (timeUpdate)="onTimeUpdate($event)"
+  (videoEnded)="onVideoEnded()"
+  (ready)="onPlayerReady()"
+  (playStateChange)="onPlayStateChange($event)"
+></app-youtube-player>

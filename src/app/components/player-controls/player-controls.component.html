@@ -1,82 +1,106 @@
 <div class="controls-wrap">
 
-  <!-- Progress bar -->
-  <div class="progress-row">
-    <span class="time">{{ currentTime }}</span>
-    <div class="progress-track">
-      <div class="progress-fill" [style.width.%]="progress"></div>
-      <input
-        class="progress-input"
-        type="range" min="0" max="100"
-        [value]="progress"
-        (input)="onSeek($event)"
-      />
+  <!-- Track info row -->
+  <div class="track-row">
+    @if (albumArtUrl) {
+      <img class="track-art" [src]="albumArtUrl" [alt]="trackName" />
+    } @else {
+      <div class="track-art track-art-placeholder">♪</div>
+    }
+
+    <div class="track-meta">
+      <span class="badge-now-playing">Now Playing</span>
+      <span class="track-name">{{ trackName || 'No track selected' }}</span>
+      <span class="track-artist">{{ artistName }}</span>
+      <span class="streaming-label">Streaming via YouTube</span>
     </div>
+
+    <!-- <button class="btn-change-video" (click)="changeVideo.emit()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Change Video
+    </button> -->
+  </div>
+
+  <!-- Add to playlist -->
+  <button class="btn-add-playlist" (click)="addToPlaylist.emit()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add to BooneTunes Playlist
+  </button>
+
+  <!-- Progress bar -->
+  <div class="progress-track">
+    <div class="progress-fill" [style.width.%]="progress"></div>
+    <input
+      class="progress-input"
+      type="range" min="0" max="100"
+      [value]="progress"
+      (input)="onSeek($event)"
+    />
+  </div>
+  <div class="time-row">
+    <span class="time">{{ currentTime }}</span>
     <span class="time">{{ totalTime }}</span>
   </div>
 
-  <!-- Buttons + volume -->
+  <!-- Playback controls + volume -->
   <div class="buttons-row">
 
-    <!-- Shuffle -->
-    <button
-      class="ctrl-btn"
-      [class.active]="isShuffle"
-      title="Shuffle"
-      (click)="toggleShuffle.emit()"
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="16 3 21 3 21 8"/>
-        <line x1="4" y1="20" x2="21" y2="3"/>
-        <polyline points="21 16 21 21 16 21"/>
-        <line x1="15" y1="15" x2="21" y2="21"/>
-      </svg>
-    </button>
-
-    <!-- Previous -->
-    <button class="ctrl-btn" title="Previous" (click)="prev.emit()">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <polygon points="19 20 9 12 19 4 19 20"/>
-        <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/>
-      </svg>
-    </button>
-
-    <!-- Play/Pause -->
-    <button class="play-btn" (click)="togglePlay.emit()">
-      @if (isPlaying) {
-        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-          <rect x="6" y="4" width="4" height="16"/>
-          <rect x="14" y="4" width="4" height="16"/>
+    <div class="center-controls">
+      <!-- Shuffle -->
+      <button class="ctrl-btn" [class.active]="isShuffle" title="Shuffle" (click)="toggleShuffle.emit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 3 21 3 21 8"/>
+          <line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/>
+          <line x1="15" y1="15" x2="21" y2="21"/>
         </svg>
-      } @else {
-        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-          <polygon points="5 3 19 12 5 21 5 3"/>
+      </button>
+
+      <!-- Previous -->
+      <button class="ctrl-btn" title="Previous" (click)="prev.emit()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="19 20 9 12 19 4 19 20"/>
+          <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/>
         </svg>
-      }
-    </button>
+      </button>
 
-    <!-- Next -->
-    <button class="ctrl-btn" title="Next" (click)="next.emit()">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <polygon points="5 4 15 12 5 20 5 4"/>
-        <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/>
-      </svg>
-    </button>
+      <!-- Play / Pause -->
+      <button class="play-btn" (click)="togglePlay.emit()">
+        @if (isPlaying) {
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <rect x="6" y="4" width="4" height="16"/>
+            <rect x="14" y="4" width="4" height="16"/>
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        }
+      </button>
 
-    <!-- Repeat -->
-    <button
-      class="ctrl-btn"
-      [class.active]="isRepeat"
-      title="Repeat"
-      (click)="toggleRepeat.emit()"
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="17 1 21 5 17 9"/>
-        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-        <polyline points="7 23 3 19 7 15"/>
-        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-      </svg>
-    </button>
+      <!-- Next -->
+      <button class="ctrl-btn" title="Next" (click)="next.emit()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 4 15 12 5 20 5 4"/>
+          <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+
+      <!-- Repeat -->
+      <button class="ctrl-btn" [class.active]="isRepeat" title="Repeat" (click)="toggleRepeat.emit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"/>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <polyline points="7 23 3 19 7 15"/>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+      </button>
+    </div>
 
     <!-- Volume -->
     <div class="volume-row">

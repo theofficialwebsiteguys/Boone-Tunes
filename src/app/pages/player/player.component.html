@@ -25,24 +25,57 @@
 
       <!-- Video screen -->
       <div class="video-screen">
-        @if (currentItem) {
-          <div class="video-inner">
-            <div class="video-gradient"></div>
-            <div class="video-track-info">
-              <p class="vt-artist">{{ currentItem.track.artists.join(' · ') }}</p>
-              <h2 class="vt-name">{{ currentItem.track.name }}</h2>
-              @if (currentItem.track.albumName) {
-                <p class="vt-album">{{ currentItem.track.albumName }}</p>
-              }
-            </div>
-          </div>
-        } @else {
+
+        <!--
+          Sentinel div: AppComponent positions the persistent YouTube iframe
+          to exactly cover this element via getBoundingClientRect + rAF.
+        -->
+        <div #videoSlot class="video-slot"></div>
+
+        @if (index < 0) {
           <div class="video-empty">
             <span class="video-empty-icon">♪</span>
             <p>No track playing</p>
           </div>
         }
+
+        <!-- Overlay blocks YouTube's native hover UI -->
+        <div class="yt-overlay"></div>
+
+        <!-- Loading indicator shown on top while fetching a new video -->
+        @if (loadingVideo) {
+          <div class="video-loading">
+            <div class="spinner"></div>
+            <p>Finding music video…</p>
+          </div>
+        }
       </div>
+
+      <!-- Video alternatives row -->
+      @if (videos.length > 1) {
+        <div class="alts-bar">
+          <span class="alts-label">Switch video</span>
+          <div class="alts-list">
+            @for (v of videos; track v.videoId) {
+              <button
+                class="alt-btn"
+                [class.alt-active]="v.videoId === currentVideoId"
+                (click)="selectVideo(v)"
+                [title]="v.title"
+              >
+                @if (v.thumbnail) {
+                  <img [src]="v.thumbnail" [alt]="v.title" />
+                } @else {
+                  <span class="alt-placeholder">▶</span>
+                }
+                @if (v.videoId === currentVideoId) {
+                  <span class="alt-dot"></span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
 
       <!-- Controls bar -->
       <div class="controls-bar">
@@ -54,13 +87,19 @@
           [volume]="volume"
           [currentTime]="currentTimeStr"
           [totalTime]="totalTimeStr"
+          [trackName]="currentItem?.track?.name ?? ''"
+          [artistName]="currentItem?.track?.artists?.join(' · ') ?? ''"
+          [albumArtUrl]="currentItem?.track?.albumArtUrl ?? null"
+          [hasAlternatives]="videos.length > 1"
           (togglePlay)="playerSvc.togglePlay()"
           (prev)="playerSvc.previous()"
           (next)="playerSvc.next()"
           (toggleShuffle)="playerSvc.toggleShuffle()"
           (toggleRepeat)="playerSvc.toggleRepeat()"
-          (seekTo)="playerSvc.seekTo($event)"
-          (volumeChange)="playerSvc.setVolume($event)"
+          (seekTo)="onSeekTo($event)"
+          (volumeChange)="onVolumeChange($event)"
+          (changeVideo)="playerSvc.fetchVideos()"
+          (addToPlaylist)="onAddToPlaylist()"
         ></app-player-controls>
       </div>
     </div>
@@ -71,6 +110,8 @@
       [currentIndex]="index"
       (playAtIndex)="playerSvc.playAtIndex($event)"
       (clearQueue)="playerSvc.clearQueue()"
+      (removeAtIndex)="playerSvc.removeFromQueue($event)"
+      (reorderQueue)="playerSvc.reorderQueue($event.from, $event.to)"
     ></app-queue-sidebar>
 
   </div>

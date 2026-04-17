@@ -1,0 +1,45 @@
+@if (show) {
+  <div class="mini-player" (click)="openPlayer()">
+
+    <!-- Live video preview (sentinel — AppComponent positions the iframe here) -->
+    <div class="mini-video-wrap">
+      @if (hasVideo) {
+        <div #videoSlot class="mini-video-slot"></div>
+      } @else if (currentItem!.track.albumArtUrl) {
+        <img class="mini-fallback-art" [src]="currentItem!.track.albumArtUrl" [alt]="currentItem!.track.name" />
+      } @else {
+        <div class="mini-fallback-art mini-fallback-placeholder">♪</div>
+      }
+      <!-- Overlay so clicks pass through to openPlayer() -->
+      <div class="mini-video-overlay"></div>
+    </div>
+
+    <div class="mini-info">
+      <span class="mini-name">{{ currentItem!.track.name }}</span>
+      <span class="mini-artist">{{ currentItem!.track.artists.join(', ') }}</span>
+    </div>
+
+    <button class="mini-play" (click)="togglePlay($event)" [title]="isPlaying ? 'Pause' : 'Play'">
+      @if (isPlaying) {
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <rect x="6" y="4" width="4" height="16"/>
+          <rect x="14" y="4" width="4" height="16"/>
+        </svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+      }
+    </button>
+
+    <button class="mini-expand" (click)="openPlayer(); $event.stopPropagation()" title="Open player">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+        <polyline points="15 3 21 3 21 9"/>
+        <polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/>
+        <line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+    </button>
+
+  </div>
+}

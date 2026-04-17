@@ -11,6 +11,8 @@
 
     <!-- Search results view -->
     @if (searchQuery) {
+
+      <!-- Spotify results -->
       <section class="section">
         <h2 class="section-title">
           Results for <span class="gt-blue">"{{ searchQuery }}"</span>
@@ -34,7 +36,63 @@
             }
           </div>
         }
+
+        <!-- YouTube fallback prompt -->
+        @if (!ytSearchActive) {
+          <div class="yt-prompt">
+            <span class="yt-prompt-text">Not finding what you're looking for?</span>
+            <button class="yt-prompt-btn" (click)="searchYouTube()">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+              Search YouTube
+            </button>
+          </div>
+        }
       </section>
+
+      <!-- YouTube results -->
+      @if (ytSearchActive) {
+        <section class="section">
+          <div class="yt-results-header">
+            <h2 class="section-title">YouTube results</h2>
+            <button class="yt-back-btn" (click)="ytSearchActive = false; ytResults = []">
+              ✕ Close
+            </button>
+          </div>
+
+          @if (loadingYt) {
+            <div class="state-msg">Searching YouTube…</div>
+          } @else if (ytError) {
+            <div class="state-msg error">{{ ytError }}</div>
+          } @else if (ytResults.length === 0) {
+            <div class="state-msg">No YouTube results found.</div>
+          } @else {
+            <div class="yt-grid">
+              @for (video of ytResults; track video.videoId) {
+                <div class="yt-card">
+                  <div class="yt-thumb-wrap">
+                    @if (video.thumbnail) {
+                      <img class="yt-thumb" [src]="video.thumbnail" [alt]="video.title" loading="lazy" />
+                    } @else {
+                      <div class="yt-thumb yt-thumb-placeholder">▶</div>
+                    }
+                    <div class="yt-play-icon">▶</div>
+                  </div>
+                  <div class="yt-card-body">
+                    <p class="yt-title" [title]="video.title">{{ video.title }}</p>
+                    <p class="yt-channel">{{ video.channelTitle }}</p>
+                  </div>
+                  <button class="yt-add-btn btn-grad" (click)="addYtVideoToQueue(video)">
+                    + Queue
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+
     } @else {
 
       <!-- Greeting + tabs -->
@@ -57,6 +115,9 @@
           >Liked Songs</button>
         </div>
       </section>
+
+      <!-- Mood quiz / vibe finder -->
+      <app-mood-quiz></app-mood-quiz>
 
       <!-- Playlist grid -->
       <section class="section">
