@@ -7,7 +7,10 @@
       "Bash(xargs wc:*)",
       "Bash(find /d/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server -name \"*.js\" ! -path \"*/node_modules/*\" ! -path \"*/migrations/*\" -exec grep -l \"queue\\\\|Queue\\\\|shuffle\\\\|Shuffle\" {} \\\\;)",
       "Bash(npm install:*)",
-      "Bash(npx ng:*)"
+      "Bash(npx ng:*)",
+      "Read(//Users/jaredfinn/Website_Guys/Repos/Boone-Tunes-Server/**)",
+      "Read(//Users/jaredfinn/Website_Guys/Repos/**)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

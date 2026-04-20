@@ -24,6 +24,9 @@ export class PlayerControlsComponent {
   @Input() albumArtUrl:  string|null = null;
   @Input() hasAlternatives = false;
 
+  /* Cast state */
+  @Input() castState: 'NO_DEVICES_AVAILABLE' | 'NOT_CONNECTED' | 'CONNECTING' | 'CONNECTED' = 'NO_DEVICES_AVAILABLE';
+
   /* Events */
   @Output() togglePlay    = new EventEmitter<void>();
   @Output() prev          = new EventEmitter<void>();
@@ -34,7 +37,11 @@ export class PlayerControlsComponent {
   @Output() volumeChange  = new EventEmitter<number>();
   @Output() changeVideo   = new EventEmitter<void>();
   @Output() addToPlaylist = new EventEmitter<void>();
+  @Output() castToggle    = new EventEmitter<void>();
 
   onSeek(e: Event):   void { this.seekTo.emit(+(e.target as HTMLInputElement).value); }
   onVolume(e: Event): void { this.volumeChange.emit(+(e.target as HTMLInputElement).value); }
+  onCastClick(): void {
+    this.castToggle.emit();
+  }
 }

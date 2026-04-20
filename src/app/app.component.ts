@@ -45,7 +45,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.playerSvc.currentVideoId$.subscribe(id => (this.currentVideoId = id)),
       this.playerSvc.playing$.subscribe(v => (this.isPlaying = v)),
       this.playerSvc.volume$.subscribe(v  => (this.volume    = v)),
-      this.playerSvc.seekCommand$.subscribe(pct => this.ytPlayer?.seekTo(pct)),
+      this.playerSvc.seekCommand$.subscribe(pct => {
+        this.ytPlayer?.seekTo(pct);
+      }),
 
       this.portalSvc.slot$.subscribe(el => {
         this.primaryEl = el;

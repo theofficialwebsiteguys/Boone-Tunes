@@ -24,7 +24,7 @@
     <div class="video-area">
 
       <!-- Video screen -->
-      <div class="video-screen">
+      <div class="video-screen" #videoScreen>
 
         <!--
           Sentinel div: AppComponent positions the persistent YouTube iframe
@@ -41,6 +41,175 @@
 
         <!-- Overlay blocks YouTube's native hover UI -->
         <div class="yt-overlay"></div>
+
+        <!-- Fullscreen toggle (normal mode only) -->
+        @if (!isFullscreen) {
+          <button class="btn-fullscreen" (click)="toggleFullscreen()" title="Fullscreen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 3 21 3 21 9"/><line x1="21" y1="3" x2="14" y2="10"/>
+              <polyline points="9 21 3 21 3 15"/><line x1="3" y1="21" x2="10" y2="14"/>
+            </svg>
+          </button>
+        }
+
+        <!-- Fullscreen overlay: controls + queue (only active in fullscreen) -->
+        @if (isFullscreen) {
+          <div
+            class="fs-overlay"
+            [class.controls-visible]="fsControlsVisible || fsQueueOpen"
+            (mousemove)="onFsMouseMove()"
+            (mouseleave)="onFsMouseLeave()"
+          >
+
+            <!-- Bottom gradient backdrop -->
+            <div class="fs-gradient"></div>
+
+            <!-- Bottom controls bar -->
+            <div class="fs-controls">
+
+              <!-- Progress -->
+              <div class="fs-progress-row">
+                <span class="fs-time">{{ currentTimeStr }}</span>
+                <div class="fs-prog-track">
+                  <div class="fs-prog-fill" [style.width.%]="progress"></div>
+                  <input class="fs-prog-input" type="range" min="0" max="100" [value]="progress" (input)="onFsSeek($event)" />
+                </div>
+                <span class="fs-time">{{ totalTimeStr }}</span>
+              </div>
+
+              <!-- Buttons -->
+              <div class="fs-btns-row">
+
+                <!-- Track info -->
+                <div class="fs-track-info">
+                  @if (currentItem?.track?.albumArtUrl) {
+                    <img class="fs-art" [src]="currentItem!.track.albumArtUrl" [alt]="currentItem!.track.name" />
+                  } @else {
+                    <div class="fs-art fs-art-ph">♪</div>
+                  }
+                  <div class="fs-meta">
+                    <span class="fs-track-name">{{ currentItem?.track?.name ?? 'No track' }}</span>
+                    <span class="fs-artist">{{ currentItem?.track?.artists?.join(' · ') ?? '' }}</span>
+                  </div>
+                </div>
+
+                <!-- Playback -->
+                <div class="fs-playback">
+                  <button class="fs-btn" [class.active]="isShuffle" title="Shuffle" (click)="playerSvc.toggleShuffle()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+                      <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+                    </svg>
+                  </button>
+                  <button class="fs-btn" title="Previous" (click)="playerSvc.previous()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="19 20 9 12 19 4 19 20"/>
+                      <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                  <button class="fs-play-btn" (click)="playerSvc.togglePlay()">
+                    @if (isPlaying) {
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                        <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                      </svg>
+                    }
+                  </button>
+                  <button class="fs-btn" title="Next" (click)="playerSvc.next()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 4 15 12 5 20 5 4"/>
+                      <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                  <button class="fs-btn" [class.active]="isRepeat" title="Repeat" (click)="playerSvc.toggleRepeat()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                      <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Right controls -->
+                <div class="fs-right-controls">
+                  <div class="fs-vol">
+                    <svg class="fs-vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    </svg>
+                    <div class="fs-vol-track">
+                      <div class="fs-vol-fill" [style.width.%]="volume"></div>
+                      <input class="fs-vol-input" type="range" min="0" max="100" [value]="volume" (input)="onFsVolume($event)" />
+                    </div>
+                  </div>
+                  <button
+                    class="fs-btn"
+                    [class.active]="castState === 'CONNECTED'"
+                    [class.connecting]="castState === 'CONNECTING'"
+                    [title]="castState === 'CONNECTED' ? 'Stop casting' : 'Cast to TV'"
+                    (click)="castSvc.toggleCasting()"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/>
+                      <line x1="2" y1="20" x2="2.01" y2="20"/>
+                    </svg>
+                  </button>
+                  <button class="fs-btn" title="Exit fullscreen" (click)="toggleFullscreen()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="8 3 3 3 3 8"/><line x1="3" y1="3" x2="10" y2="10"/>
+                      <polyline points="16 3 21 3 21 8"/><line x1="21" y1="3" x2="14" y2="10"/>
+                      <polyline points="8 21 3 21 3 16"/><line x1="3" y1="21" x2="10" y2="14"/>
+                      <polyline points="16 21 21 21 21 16"/><line x1="21" y1="21" x2="14" y2="14"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Queue zone: hover the right edge to open -->
+            <div class="fs-queue-zone" (mouseenter)="fsQueueOpen = true" (mouseleave)="fsQueueOpen = false">
+              <div class="fs-queue-tab">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                  <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+                <span>Queue</span>
+              </div>
+              <div class="fs-queue-panel" [class.open]="fsQueueOpen">
+                <div class="fs-queue-hdr">
+                  <span class="fs-queue-title">Up Next</span>
+                  <span class="fs-queue-count">{{ queue.length }} tracks</span>
+                </div>
+                <div class="fs-queue-list">
+                  @for (item of queue; track item.track.spotifyId; let i = $index) {
+                    <div class="fs-qi" [class.current]="i === index" (click)="playerSvc.playAtIndex(i)">
+                      @if (item.track.albumArtUrl) {
+                        <img class="fs-qi-art" [src]="item.track.albumArtUrl" [alt]="item.track.name" />
+                      } @else {
+                        <div class="fs-qi-art fs-qi-art-ph">♪</div>
+                      }
+                      <div class="fs-qi-meta">
+                        <span class="fs-qi-name">{{ item.track.name }}</span>
+                        <span class="fs-qi-artist">{{ item.track.artists?.join(' · ') }}</span>
+                      </div>
+                      <button class="fs-qi-remove" (click)="$event.stopPropagation(); playerSvc.removeFromQueue(i)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                  @if (queue.length === 0) {
+                    <div class="fs-qi-empty">Queue is empty</div>
+                  }
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
 
         <!-- Loading indicator shown on top while fetching a new video -->
         @if (loadingVideo) {
@@ -91,6 +260,7 @@
           [artistName]="currentItem?.track?.artists?.join(' · ') ?? ''"
           [albumArtUrl]="currentItem?.track?.albumArtUrl ?? null"
           [hasAlternatives]="videos.length > 1"
+          [castState]="castState"
           (togglePlay)="playerSvc.togglePlay()"
           (prev)="playerSvc.previous()"
           (next)="playerSvc.next()"
@@ -100,6 +270,7 @@
           (volumeChange)="onVolumeChange($event)"
           (changeVideo)="playerSvc.fetchVideos()"
           (addToPlaylist)="onAddToPlaylist()"
+          (castToggle)="castSvc.toggleCasting()"
         ></app-player-controls>
       </div>
     </div>

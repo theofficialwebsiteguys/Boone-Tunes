@@ -226,6 +226,27 @@
   transform: scale(1.05);
 }
 
+/* ── Cast button ─────────────────────────── */
+.cast-btn {
+  flex-shrink: 0;
+}
+
+
+.cast-btn.active {
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.35);
+}
+
+.cast-btn.connecting {
+  animation: cast-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes cast-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+
 /* ── Volume ──────────────────────────────── */
 .volume-row {
   display: flex;
