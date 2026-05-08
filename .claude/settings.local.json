@@ -10,7 +10,10 @@
       "Bash(npx ng:*)",
       "Read(//Users/jaredfinn/Website_Guys/Repos/Boone-Tunes-Server/**)",
       "Read(//Users/jaredfinn/Website_Guys/Repos/**)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(mkdir -p \"d:/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/data\")",
+      "Bash(mkdir -p \"d:/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/scripts\")",
+      "Bash(npm show *)"
     ]
   }
 }

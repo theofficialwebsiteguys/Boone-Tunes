@@ -192,7 +192,7 @@
                       }
                       <div class="fs-qi-meta">
                         <span class="fs-qi-name">{{ item.track.name }}</span>
-                        <span class="fs-qi-artist">{{ item.track.artists?.join(' · ') }}</span>
+                        <span class="fs-qi-artist">{{ item.track.artists.join(' · ') }}</span>
                       </div>
                       <button class="fs-qi-remove" (click)="$event.stopPropagation(); playerSvc.removeFromQueue(i)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
