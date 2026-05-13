@@ -49,26 +49,26 @@
       </div>
     }
 
-    <!-- ── Up Next ──────────────────────────── -->
-    @if (upNext.length > 0) {
-      <div class="section-label section-label-upnext">
-        Up Next
-        <span class="up-next-count">{{ upNext.length }}</span>
+    <!-- ── Playing Next ────────────────────── -->
+    @if (playNextItems.length > 0) {
+      <div class="section-label section-label-next">
+        <span class="label-dot label-dot-next"></span>
+        Playing Next
+        <span class="up-next-count">{{ playNextItems.length }}</span>
       </div>
 
       <div
         cdkDropList
-        [cdkDropListData]="upNext"
-        (cdkDropListDropped)="onDrop($event)"
+        [cdkDropListData]="playNextItems"
+        (cdkDropListDropped)="onDropPlayNext($event)"
         class="up-next-list"
       >
-        @for (item of upNext; track item.track.spotifyId; let i = $index) {
+        @for (item of playNextItems; track item.track.spotifyId; let i = $index) {
           <div
             cdkDrag
-            class="queue-item draggable"
+            class="queue-item draggable play-next-item"
             (click)="playAtIndex.emit(currentIndex + 1 + i)"
           >
-            <!-- Drag handle -->
             <div class="drag-handle" cdkDragHandle>
               <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
                 <circle cx="9" cy="5"  r="1.5"/>
@@ -91,7 +91,6 @@
               <span class="q-artist">{{ item.track.artists.join(', ') }}</span>
             </div>
 
-            <!-- Remove button -->
             <button
               class="btn-remove"
               title="Remove from queue"
@@ -103,7 +102,64 @@
               </svg>
             </button>
 
-            <!-- Drag placeholder -->
+            <div *cdkDragPlaceholder class="drag-placeholder"></div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Queue ──────────────────────────── -->
+    @if (queueItems.length > 0) {
+      <div class="section-label section-label-upnext">
+        {{ playNextItems.length > 0 ? 'Queue' : 'Up Next' }}
+        <span class="up-next-count">{{ queueItems.length }}</span>
+      </div>
+
+      <div
+        cdkDropList
+        [cdkDropListData]="queueItems"
+        (cdkDropListDropped)="onDropQueue($event)"
+        class="up-next-list"
+      >
+        @for (item of queueItems; track item.track.spotifyId; let i = $index) {
+          <div
+            cdkDrag
+            class="queue-item draggable"
+            (click)="playAtIndex.emit(currentIndex + 1 + playNextItems.length + i)"
+          >
+            <div class="drag-handle" cdkDragHandle>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <circle cx="9" cy="5"  r="1.5"/>
+                <circle cx="9" cy="12" r="1.5"/>
+                <circle cx="9" cy="19" r="1.5"/>
+                <circle cx="15" cy="5"  r="1.5"/>
+                <circle cx="15" cy="12" r="1.5"/>
+                <circle cx="15" cy="19" r="1.5"/>
+              </svg>
+            </div>
+
+            @if (item.track.albumArtUrl) {
+              <img class="q-art" [src]="item.track.albumArtUrl" [alt]="item.track.albumName" loading="lazy" />
+            } @else {
+              <div class="q-art q-art-placeholder">♪</div>
+            }
+
+            <div class="q-info">
+              <span class="q-name">{{ item.track.name }}</span>
+              <span class="q-artist">{{ item.track.artists.join(', ') }}</span>
+            </div>
+
+            <button
+              class="btn-remove"
+              title="Remove from queue"
+              (click)="onRemove($event, currentIndex + 1 + playNextItems.length + i)"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+
             <div *cdkDragPlaceholder class="drag-placeholder"></div>
           </div>
         }
@@ -111,7 +167,7 @@
     }
 
     <!-- Empty state -->
-    @if (!currentItem && upNext.length === 0) {
+    @if (!currentItem && playNextItems.length === 0 && queueItems.length === 0) {
       <div class="empty-state">
         <span class="empty-icon">♪</span>
         <p>Your queue is empty</p>

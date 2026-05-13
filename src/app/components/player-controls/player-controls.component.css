@@ -227,14 +227,12 @@
 }
 
 /* ── Cast button ─────────────────────────── */
-.cast-btn {
-  flex-shrink: 0;
-}
-
+.cast-btn { flex-shrink: 0; }
 
 .cast-btn.active {
-  color: #22d3ee;
-  border-color: rgba(34, 211, 238, 0.35);
+  color: var(--teal);
+  border-color: rgba(34,211,238,0.35);
+  background: rgba(34,211,238,0.08);
 }
 
 .cast-btn.connecting {

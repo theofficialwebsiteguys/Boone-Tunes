@@ -142,6 +142,60 @@
    Lives below the track info, above controls.
    Completely outside the video-screen so it
    never blocks the iframe.                   */
+
+/* ── Video type preference bar ──────────── */
+.pref-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pref-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.pref-pills {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.pref-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 500px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--t), border-color var(--t), background var(--t);
+  white-space: nowrap;
+}
+
+.pref-pill:hover {
+  color: var(--text);
+  border-color: var(--border-light);
+  background: var(--surface-hover);
+}
+
+.pref-pill.active {
+  color: var(--blue);
+  border-color: rgba(91, 124, 250, 0.5);
+  background: rgba(91, 124, 250, 0.1);
+}
+
 .alts-bar {
   display: flex;
   align-items: center;
@@ -631,9 +685,35 @@
   color: rgba(255,255,255,0.3);
 }
 
+.fs-qi-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  padding: 0.75rem 0.6rem 0.3rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.fs-qi-label:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+
+.fs-qi-label-next {
+  color: rgba(91, 124, 250, 0.8);
+}
+
+.fs-qi-next {
+  border-left: 2px solid rgba(91, 124, 250, 0.5);
+  border-radius: 0 8px 8px 0 !important;
+}
+
 /* ── Fullscreen layout ───────────────────── */
 /* Hide everything except the video screen when the page is fullscreen */
 :host-context(:fullscreen) .topbar,
+:host-context(:fullscreen) .pref-bar,
 :host-context(:fullscreen) .alts-bar,
 :host-context(:fullscreen) .controls-bar,
 :host-context(:fullscreen) app-queue-sidebar {

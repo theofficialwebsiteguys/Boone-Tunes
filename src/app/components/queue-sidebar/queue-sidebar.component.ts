@@ -26,17 +26,31 @@ export class QueueSidebarComponent {
       : null;
   }
 
-  /** Tracks after the current track. */
-  get upNext(): QueueItem[] {
-    return this.queue.slice(this.currentIndex + 1);
+  /** Explicitly-queued tracks that play before the regular queue. */
+  get playNextItems(): QueueItem[] {
+    const result: QueueItem[] = [];
+    for (let i = this.currentIndex + 1; i < this.queue.length; i++) {
+      if (this.queue[i].isPlayNext) result.push(this.queue[i]);
+      else break;
+    }
+    return result;
   }
 
-  onDrop(event: CdkDragDrop<QueueItem[]>): void {
+  /** Regular playlist tracks after the play-next section. */
+  get queueItems(): QueueItem[] {
+    return this.queue.slice(this.currentIndex + 1 + this.playNextItems.length);
+  }
+
+  onDropPlayNext(event: CdkDragDrop<QueueItem[]>): void {
     if (event.previousIndex === event.currentIndex) return;
-    // Convert relative upNext indices to absolute queue indices
-    const fromAbs = this.currentIndex + 1 + event.previousIndex;
-    const toAbs   = this.currentIndex + 1 + event.currentIndex;
-    this.reorderQueue.emit({ from: fromAbs, to: toAbs });
+    const offset = this.currentIndex + 1;
+    this.reorderQueue.emit({ from: offset + event.previousIndex, to: offset + event.currentIndex });
+  }
+
+  onDropQueue(event: CdkDragDrop<QueueItem[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    const offset = this.currentIndex + 1 + this.playNextItems.length;
+    this.reorderQueue.emit({ from: offset + event.previousIndex, to: offset + event.currentIndex });
   }
 
   onRemove(event: MouseEvent, absoluteIndex: number): void {

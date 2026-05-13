@@ -1,5 +1,10 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component, Input, Output, EventEmitter,
+  inject, OnInit, OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+import { CastService, CastState } from '../../services/cast.service';
 
 @Component({
   selector: 'app-player-controls',
@@ -8,7 +13,12 @@ import { CommonModule } from '@angular/common';
   templateUrl: './player-controls.component.html',
   styleUrl: './player-controls.component.css',
 })
-export class PlayerControlsComponent {
+export class PlayerControlsComponent implements OnInit, OnDestroy {
+  private readonly castSvc = inject(CastService);
+  private castSub?: Subscription;
+
+  castState: CastState = 'NO_DEVICES_AVAILABLE';
+
   /* Playback state */
   @Input() isPlaying = false;
   @Input() isShuffle = false;
@@ -24,9 +34,6 @@ export class PlayerControlsComponent {
   @Input() albumArtUrl:  string|null = null;
   @Input() hasAlternatives = false;
 
-  /* Cast state */
-  @Input() castState: 'NO_DEVICES_AVAILABLE' | 'NOT_CONNECTED' | 'CONNECTING' | 'CONNECTED' = 'NO_DEVICES_AVAILABLE';
-
   /* Events */
   @Output() togglePlay    = new EventEmitter<void>();
   @Output() prev          = new EventEmitter<void>();
@@ -37,11 +44,14 @@ export class PlayerControlsComponent {
   @Output() volumeChange  = new EventEmitter<number>();
   @Output() changeVideo   = new EventEmitter<void>();
   @Output() addToPlaylist = new EventEmitter<void>();
-  @Output() castToggle    = new EventEmitter<void>();
 
+  ngOnInit(): void {
+    this.castSub = this.castSvc.castState$.subscribe(s => (this.castState = s));
+  }
+
+  ngOnDestroy(): void { this.castSub?.unsubscribe(); }
+
+  onCastClick(): void { this.castSvc.toggleCasting(); }
   onSeek(e: Event):   void { this.seekTo.emit(+(e.target as HTMLInputElement).value); }
   onVolume(e: Event): void { this.volumeChange.emit(+(e.target as HTMLInputElement).value); }
-  onCastClick(): void {
-    this.castToggle.emit();
-  }
 }

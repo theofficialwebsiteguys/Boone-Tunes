@@ -6,6 +6,9 @@ import { QueueItem } from '../models/queue-item.model';
 import { YoutubeService, YoutubeVideo } from './youtube.service';
 
 const STORAGE_KEY = 'bt-player-state';
+const PREF_KEY    = 'bt-video-pref';
+
+export type VideoPreference = 'music-video' | 'official-audio' | 'lyric-video' | 'live';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerService {
@@ -25,6 +28,9 @@ export class PlayerService {
   private readonly videosS       = new BehaviorSubject<YoutubeVideo[]>([]);
   private readonly loadingVideoS = new BehaviorSubject<boolean>(false);
   private readonly seekS         = new Subject<number>();
+  private readonly videoPrefS    = new BehaviorSubject<VideoPreference>(
+    (localStorage.getItem(PREF_KEY) as VideoPreference) ?? 'music-video'
+  );
   private lastFetchedIndex       = -2;
 
   constructor() { this.restoreState(); }
@@ -42,7 +48,9 @@ export class PlayerService {
   videos$         = this.videosS.asObservable();
   loadingVideo$   = this.loadingVideoS.asObservable();
   /** One-shot seek commands forwarded to the YouTube player */
-  seekCommand$    = this.seekS.asObservable();
+  seekCommand$       = this.seekS.asObservable();
+  videoPreference$   = this.videoPrefS.asObservable();
+  get videoPreference(): VideoPreference { return this.videoPrefS.value; }
 
   /* ── Snapshots ─────────────────────────── */
   get currentItem(): QueueItem | null {
@@ -96,14 +104,44 @@ export class PlayerService {
     this.appendTracksToQueue(shuffled);
   }
 
-  /** Add a single track to the end of the queue. */
+  /** Insert a single track into the "Playing Next" sub-queue — right after any
+   *  other play-next items, but always before the general playlist queue.
+   *  If the queue is empty, starts playback from the beginning instead. */
+  addPlayNext(track: Track): void {
+    const item: QueueItem = { track, youtubeVideoId: null, status: 'ready', isPlayNext: true };
+    if (this.queue.length === 0) {
+      this.queueS.next([item]);
+      this.indexS.next(0);
+      this.resetTime();
+      this.playingS.next(false);
+      this.fetchVideos();
+      this.saveState();
+      this.router.navigate(['/player']);
+      return;
+    }
+    // Insert after the last consecutive isPlayNext item in the upcoming section
+    const q = this.queue;
+    let insertAt = this.index + 1;
+    for (let i = this.index + 1; i < q.length; i++) {
+      if (q[i].isPlayNext) insertAt = i + 1;
+      else break;
+    }
+    const newQ = [...q];
+    newQ.splice(insertAt, 0, item);
+    this.queueS.next(newQ);
+    this.saveState();
+    this.router.navigate(['/player']);
+  }
+
+  /** Add a single track to play next (after the currently playing track). */
   addToQueue(track: Track): void {
-    this.appendTracksToQueue([track]);
+    this.addPlayNext(track);
   }
 
   /** Add a YouTube video directly to the queue without needing a Spotify track.
    *  Builds a synthetic Track from the video metadata so the queue model stays uniform.
-   *  Because the videoId is already known, fetchVideos() skips the API search. */
+   *  Because the videoId is already known, fetchVideos() skips the API search.
+   *  Inserts after the current track so it plays next. */
   addYouTubeVideoToQueue(video: YoutubeVideo): void {
     const syntheticTrack: Track = {
       spotifyId:   `yt:${video.videoId}`,
@@ -118,15 +156,27 @@ export class PlayerService {
       track:          syntheticTrack,
       youtubeVideoId: video.videoId,
       status:         'ready',
+      isPlayNext:     true,
     };
-    const wasEmpty = this.queue.length === 0;
-    this.queueS.next([...this.queue, item]);
-    if (wasEmpty) {
+    if (this.queue.length === 0) {
+      this.queueS.next([item]);
       this.indexS.next(0);
       this.resetTime();
       this.playingS.next(false);
       this.fetchVideos();
+      this.saveState();
+      this.router.navigate(['/player']);
+      return;
     }
+    let insertAt = this.index + 1;
+    const q = this.queue;
+    for (let i = this.index + 1; i < q.length; i++) {
+      if (q[i].isPlayNext) insertAt = i + 1;
+      else break;
+    }
+    const newQ = [...q];
+    newQ.splice(insertAt, 0, item);
+    this.queueS.next(newQ);
     this.saveState();
     this.router.navigate(['/player']);
   }
@@ -263,6 +313,17 @@ export class PlayerService {
 
   setVolume(v: number): void { this.volumeS.next(v); this.saveState(); }
 
+  setVideoPreference(pref: VideoPreference): void {
+    this.videoPrefS.next(pref);
+    localStorage.setItem(PREF_KEY, pref);
+    // Re-pick from already-fetched alternatives without a new API call
+    const videos = this.videosS.value;
+    if (videos.length > 0) {
+      const preferred = this.pickPreferredVideo(videos);
+      if (preferred) this.currentVideoS.next(preferred.videoId);
+    }
+  }
+
   /** Called by the YouTube player on each 500 ms tick */
   updateTime(currentMs: number, totalMs: number): void {
     this.currentMsS.next(currentMs);
@@ -302,6 +363,25 @@ export class PlayerService {
     this.saveState();
   }
 
+  private pickPreferredVideo(videos: YoutubeVideo[]): YoutubeVideo | null {
+    if (!videos.length) return null;
+    switch (this.videoPreference) {
+      case 'lyric-video':
+        return videos.find(v => /lyric/i.test(v.title)) ?? videos[0];
+      case 'live':
+        return videos.find(v => /\blive\b/i.test(v.title)) ?? videos[0];
+      case 'official-audio':
+        return videos.find(v => /official\s+audio|audio\s+only/i.test(v.title)) ?? videos[0];
+      case 'music-video':
+      default:
+        // Prefer a result that doesn't look like a lyric, live, or audio-only video
+        return (
+          videos.find(v => !/lyric|live|audio\s+only|karaoke/i.test(v.title)) ??
+          videos[0]
+        );
+    }
+  }
+
   fetchVideos(force = false): void {
     const item = this.currentItem;
     if (!item) return;
@@ -325,7 +405,7 @@ export class PlayerService {
     this.ytSvc.searchForTrack(track, artist, 5).subscribe({
       next: result => {
         this.videosS.next(result.videos);
-        this.currentVideoS.next(result.videos[0]?.videoId ?? null);
+        this.currentVideoS.next(this.pickPreferredVideo(result.videos)?.videoId ?? null);
         this.loadingVideoS.next(false);
       },
       error: () => { this.loadingVideoS.next(false); },

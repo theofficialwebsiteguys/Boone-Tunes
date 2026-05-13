@@ -38,6 +38,11 @@ export class DashboardComponent implements OnInit {
   searchResults: Track[] = [];
   loadingSearch = false;
   searchError = '';
+  showAllSpotify = false;
+
+  get visibleSearchResults(): Track[] {
+    return this.showAllSpotify ? this.searchResults : this.searchResults.slice(0, 5);
+  }
 
   ytResults: YoutubeVideo[] = [];
   loadingYt = false;
@@ -87,10 +92,10 @@ export class DashboardComponent implements OnInit {
 
   onSearch(query: string): void {
     this.searchQuery = query;
-    // Reset YouTube results whenever the Spotify query changes
     this.ytResults = [];
     this.ytError = '';
     this.ytSearchActive = false;
+    this.showAllSpotify = false;
     if (!query) {
       this.searchResults = [];
       return;

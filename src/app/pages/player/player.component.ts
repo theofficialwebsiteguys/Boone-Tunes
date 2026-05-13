@@ -6,9 +6,9 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
-import { PlayerService } from '../../services/player.service';
+import { PlayerService, VideoPreference } from '../../services/player.service';
 import { VideoPortalService } from '../../services/video-portal.service';
-import { CastService, CastState } from '../../services/cast.service';
+import { CastService } from '../../services/cast.service';
 import { YoutubeVideo } from '../../services/youtube.service';
 import { QueueItem } from '../../models/queue-item.model';
 import { PlayerControlsComponent } from '../../components/player-controls/player-controls.component';
@@ -22,8 +22,8 @@ import { QueueSidebarComponent } from '../../components/queue-sidebar/queue-side
   styleUrl: './player.component.css',
 })
 export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
-  readonly playerSvc        = inject(PlayerService);
-  readonly castSvc          = inject(CastService);
+  readonly playerSvc         = inject(PlayerService);
+  readonly castSvc           = inject(CastService);
   private readonly portalSvc = inject(VideoPortalService);
   private readonly router    = inject(Router);
 
@@ -62,8 +62,6 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   currentVideoId: string | null   = null;
   loadingVideo    = false;
 
-  castState: CastState = 'NO_DEVICES_AVAILABLE';
-
   private readonly subs: Subscription[] = [];
 
   get currentItem(): QueueItem | null {
@@ -72,6 +70,28 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   get currentTimeStr(): string { return this.msToTime(this.currentMs); }
   get totalTimeStr():   string { return this.msToTime(this.totalMs); }
+
+  videoPreference: VideoPreference = 'music-video';
+
+  readonly videoPrefOptions: { value: VideoPreference; label: string; icon: string }[] = [
+    { value: 'music-video',    label: 'Music Video',  icon: 'M15 10l4.553-2.277A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z' },
+    { value: 'official-audio', label: 'Audio',        icon: 'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z' },
+    { value: 'lyric-video',    label: 'Lyrics',       icon: 'M4 6h16M4 12h16M4 18h7' },
+    { value: 'live',           label: 'Live',         icon: 'M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8' },
+  ];
+
+  get fsPlayNextItems(): QueueItem[] {
+    const result: QueueItem[] = [];
+    for (let i = this.index + 1; i < this.queue.length; i++) {
+      if (this.queue[i].isPlayNext) result.push(this.queue[i]);
+      else break;
+    }
+    return result;
+  }
+
+  get fsQueueItems(): QueueItem[] {
+    return this.queue.slice(this.index + 1 + this.fsPlayNextItems.length);
+  }
 
   ngOnInit(): void {
     this.subs.push(
@@ -86,8 +106,8 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.playerSvc.videos$.subscribe(v         => (this.videos        = v)),
       this.playerSvc.loadingVideo$.subscribe(v   => (this.loadingVideo  = v)),
       this.playerSvc.currentVideoId$.subscribe(id => (this.currentVideoId = id)),
-      this.playerSvc.index$.subscribe(i          => (this.index         = i)),
-      this.castSvc.castState$.subscribe(s        => (this.castState     = s)),
+      this.playerSvc.index$.subscribe(i             => (this.index           = i)),
+      this.playerSvc.videoPreference$.subscribe(p   => (this.videoPreference = p)),
     );
   }
 

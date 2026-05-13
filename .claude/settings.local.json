@@ -13,7 +13,8 @@
       "Bash(npx tsc:*)",
       "Bash(mkdir -p \"d:/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/data\")",
       "Bash(mkdir -p \"d:/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/scripts\")",
-      "Bash(npm show *)"
+      "Bash(npm show *)",
+      "WebFetch(domain:developers.google.com)"
     ]
   }
 }

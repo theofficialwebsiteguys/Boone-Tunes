@@ -73,10 +73,35 @@ h3 {
   padding: 0.6rem 0.75rem 0.35rem;
 }
 
+.section-label-next {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  color: var(--blue);
+}
+
+.label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.label-dot-next {
+  background: var(--blue);
+  box-shadow: 0 0 6px rgba(91, 124, 250, 0.6);
+}
+
 .section-label-upnext {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
+}
+
+/* Play-next items get a subtle left accent */
+.play-next-item {
+  border-left: 2px solid rgba(91, 124, 250, 0.45) !important;
+  border-radius: 0 8px 8px 0 !important;
 }
 
 .up-next-count {

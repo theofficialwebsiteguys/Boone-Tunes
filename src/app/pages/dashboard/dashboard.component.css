@@ -172,6 +172,34 @@
   line-height: 1.4;
 }
 
+/* ── Show more button ───────────────────── */
+.show-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0.4rem 1rem;
+  border-radius: 500px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.83rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--t), border-color var(--t), background var(--t);
+}
+
+.show-more-btn:hover {
+  color: var(--text);
+  border-color: var(--border-light);
+  background: var(--surface-hover);
+}
+
+.show-more-btn svg {
+  transition: transform 0.2s ease;
+}
+
 /* ── YouTube fallback prompt ────────────── */
 .yt-prompt {
   display: flex;

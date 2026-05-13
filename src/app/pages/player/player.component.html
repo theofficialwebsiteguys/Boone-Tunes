@@ -146,9 +146,9 @@
                   </div>
                   <button
                     class="fs-btn"
-                    [class.active]="castState === 'CONNECTED'"
-                    [class.connecting]="castState === 'CONNECTING'"
-                    [title]="castState === 'CONNECTED' ? 'Stop casting' : 'Cast to TV'"
+                    [class.active]="castSvc.isCasting"
+                    [class.connecting]="castSvc.castState === 'CONNECTING'"
+                    title="Cast to TV"
                     (click)="castSvc.toggleCasting()"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -179,28 +179,73 @@
               </div>
               <div class="fs-queue-panel" [class.open]="fsQueueOpen">
                 <div class="fs-queue-hdr">
-                  <span class="fs-queue-title">Up Next</span>
+                  <span class="fs-queue-title">Queue</span>
                   <span class="fs-queue-count">{{ queue.length }} tracks</span>
                 </div>
                 <div class="fs-queue-list">
-                  @for (item of queue; track item.track.spotifyId; let i = $index) {
-                    <div class="fs-qi" [class.current]="i === index" (click)="playerSvc.playAtIndex(i)">
-                      @if (item.track.albumArtUrl) {
-                        <img class="fs-qi-art" [src]="item.track.albumArtUrl" [alt]="item.track.name" />
+
+                  <!-- Now Playing -->
+                  @if (index >= 0) {
+                    <div class="fs-qi-label">Now Playing</div>
+                    <div class="fs-qi current" (click)="playerSvc.playAtIndex(index)">
+                      @if (queue[index]?.track?.albumArtUrl) {
+                        <img class="fs-qi-art" [src]="queue[index].track.albumArtUrl" [alt]="queue[index].track.name" />
                       } @else {
                         <div class="fs-qi-art fs-qi-art-ph">♪</div>
                       }
                       <div class="fs-qi-meta">
-                        <span class="fs-qi-name">{{ item.track.name }}</span>
-                        <span class="fs-qi-artist">{{ item.track.artists.join(' · ') }}</span>
+                        <span class="fs-qi-name">{{ queue[index]?.track?.name }}</span>
+                        <span class="fs-qi-artist">{{ queue[index]?.track?.artists?.join(' · ') }}</span>
                       </div>
-                      <button class="fs-qi-remove" (click)="$event.stopPropagation(); playerSvc.removeFromQueue(i)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                      </button>
                     </div>
                   }
+
+                  <!-- Playing Next -->
+                  @if (fsPlayNextItems.length > 0) {
+                    <div class="fs-qi-label fs-qi-label-next">Playing Next</div>
+                    @for (item of fsPlayNextItems; track item.track.spotifyId; let i = $index) {
+                      <div class="fs-qi fs-qi-next" (click)="playerSvc.playAtIndex(index + 1 + i)">
+                        @if (item.track.albumArtUrl) {
+                          <img class="fs-qi-art" [src]="item.track.albumArtUrl" [alt]="item.track.name" />
+                        } @else {
+                          <div class="fs-qi-art fs-qi-art-ph">♪</div>
+                        }
+                        <div class="fs-qi-meta">
+                          <span class="fs-qi-name">{{ item.track.name }}</span>
+                          <span class="fs-qi-artist">{{ item.track.artists.join(' · ') }}</span>
+                        </div>
+                        <button class="fs-qi-remove" (click)="$event.stopPropagation(); playerSvc.removeFromQueue(index + 1 + i)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  }
+
+                  <!-- Queue -->
+                  @if (fsQueueItems.length > 0) {
+                    <div class="fs-qi-label">{{ fsPlayNextItems.length > 0 ? 'Queue' : 'Up Next' }}</div>
+                    @for (item of fsQueueItems; track item.track.spotifyId; let i = $index) {
+                      <div class="fs-qi" (click)="playerSvc.playAtIndex(index + 1 + fsPlayNextItems.length + i)">
+                        @if (item.track.albumArtUrl) {
+                          <img class="fs-qi-art" [src]="item.track.albumArtUrl" [alt]="item.track.name" />
+                        } @else {
+                          <div class="fs-qi-art fs-qi-art-ph">♪</div>
+                        }
+                        <div class="fs-qi-meta">
+                          <span class="fs-qi-name">{{ item.track.name }}</span>
+                          <span class="fs-qi-artist">{{ item.track.artists.join(' · ') }}</span>
+                        </div>
+                        <button class="fs-qi-remove" (click)="$event.stopPropagation(); playerSvc.removeFromQueue(index + 1 + fsPlayNextItems.length + i)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  }
+
                   @if (queue.length === 0) {
                     <div class="fs-qi-empty">Queue is empty</div>
                   }
@@ -218,6 +263,26 @@
             <p>Finding music video…</p>
           </div>
         }
+      </div>
+
+      <!-- Video type preference -->
+      <div class="pref-bar">
+        <span class="pref-label">Video type</span>
+        <div class="pref-pills">
+          @for (opt of videoPrefOptions; track opt.value) {
+            <button
+              class="pref-pill"
+              [class.active]="videoPreference === opt.value"
+              (click)="playerSvc.setVideoPreference(opt.value)"
+              [title]="opt.label"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                <path [attr.d]="opt.icon"/>
+              </svg>
+              {{ opt.label }}
+            </button>
+          }
+        </div>
       </div>
 
       <!-- Video alternatives row -->
@@ -260,7 +325,6 @@
           [artistName]="currentItem?.track?.artists?.join(' · ') ?? ''"
           [albumArtUrl]="currentItem?.track?.albumArtUrl ?? null"
           [hasAlternatives]="videos.length > 1"
-          [castState]="castState"
           (togglePlay)="playerSvc.togglePlay()"
           (prev)="playerSvc.previous()"
           (next)="playerSvc.next()"
@@ -270,7 +334,6 @@
           (volumeChange)="onVolumeChange($event)"
           (changeVideo)="playerSvc.fetchVideos()"
           (addToPlaylist)="onAddToPlaylist()"
-          (castToggle)="castSvc.toggleCasting()"
         ></app-player-controls>
       </div>
     </div>
