@@ -10,7 +10,7 @@
   max-width: 1280px;
   width: 100%;
   margin: 0 auto;
-  padding: 1.5rem 2.5rem 4rem;
+  padding: 1.5rem 2.5rem 6rem;
 }
 
 /* ── Back button ────────────────────────── */
@@ -163,4 +163,98 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+/* ── Recommended section ────────────────── */
+.recommended-section {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤ 860px): stack header, shrink cover ── */
+@media (max-width: 860px) {
+  .content {
+    padding: 1rem 1.25rem 3rem;
+  }
+
+  .playlist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .cover {
+    width: 160px;
+    height: 160px;
+  }
+
+  .meta-title {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+  }
+
+  /* Drop the Album column — not enough space */
+  .col-album { display: none; }
+  .track-header-row { grid-template-columns: 2rem 1fr 3rem; }
+}
+
+/* ── Mobile (≤ 540px): tighter spacing, hide track header ── */
+@media (max-width: 540px) {
+  .content {
+    padding: 0.75rem 0.75rem 5rem;
+  }
+
+  .btn-back {
+    margin-bottom: 1.25rem;
+  }
+
+  /* Full-width cover art — break out of side padding so it fills edge to edge */
+  .cover-wrap {
+    width: calc(100% + 1.5rem);
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+  }
+
+  .cover,
+  .cover-placeholder,
+  .cover-liked {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .meta-title {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    letter-spacing: -0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  .meta-count {
+    margin-bottom: 1rem;
+  }
+
+  .btn-play,
+  .btn-shuffle {
+    padding: 0.65rem 1.1rem;
+    font-size: 0.85rem;
+  }
+
+  /* Column headers are redundant at this size */
+  .track-header-row,
+  .divider { display: none; }
 }

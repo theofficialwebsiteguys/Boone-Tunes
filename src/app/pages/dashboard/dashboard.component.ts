@@ -1,14 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { PlaylistService } from '../../services/playlist.service';
 import { PlayerService } from '../../services/player.service';
 import { SearchService } from '../../services/search.service';
 import { YoutubeService, YoutubeVideo } from '../../services/youtube.service';
+import { BtPlaylistService } from '../../services/bt-playlist.service';
 import { User } from '../../models/user.model';
 import { Playlist } from '../../models/playlist.model';
 import { Track } from '../../models/track.model';
+import { BtPlaylist } from '../../models/bt-playlist.model';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { PlaylistCardComponent } from '../../components/playlist-card/playlist-card.component';
 import { TrackRowComponent } from '../../components/track-row/track-row.component';
@@ -17,7 +19,7 @@ import { MoodQuizComponent } from '../../components/mood-quiz/mood-quiz.componen
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [NavbarComponent, PlaylistCardComponent, TrackRowComponent, MoodQuizComponent],
+  imports: [RouterLink, NavbarComponent, PlaylistCardComponent, TrackRowComponent, MoodQuizComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -28,11 +30,13 @@ export class DashboardComponent implements OnInit {
   private player    = inject(PlayerService);
   private searchSvc = inject(SearchService);
   private ytSvc     = inject(YoutubeService);
+  private btSvc     = inject(BtPlaylistService);
   private router    = inject(Router);
 
   user: User | null = null;
   playlists: Playlist[] = [];
-  activeTab: 'playlists' | 'liked' = 'playlists';
+  btPlaylists: BtPlaylist[] = [];
+  activeTab: 'playlists' | 'liked' | 'bt' = 'playlists';
 
   searchQuery = '';
   searchResults: Track[] = [];
@@ -52,10 +56,13 @@ export class DashboardComponent implements OnInit {
   loadingPlaylists = true;
   playlistsError = '';
 
+  likedTracks: Track[] = [];
+  loadingLiked = false;
+  likedError = '';
+  private likedLoaded = false;
+
   get visiblePlaylists(): Playlist[] {
-    return this.activeTab === 'liked'
-      ? this.playlists.filter(p => p.spotifyPlaylistId === 'liked-songs')
-      : this.playlists.filter(p => p.spotifyPlaylistId !== 'liked-songs');
+    return this.playlists.filter(p => p.spotifyPlaylistId !== 'liked-songs');
   }
 
   get greeting(): string {
@@ -67,6 +74,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.auth.currentUser$.subscribe(u => (this.user = u));
+    this.btSvc.playlists$.subscribe(pls => (this.btPlaylists = pls));
     this.loadPlaylists();
   }
 
@@ -85,9 +93,36 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  selectTab(tab: 'playlists' | 'liked' | 'bt'): void {
+    this.activeTab = tab;
+    if (tab === 'liked' && !this.likedLoaded) {
+      this.loadLikedTracks();
+    }
+  }
+
+  private loadLikedTracks(): void {
+    this.loadingLiked = true;
+    this.likedError = '';
+    this.plSvc.getTracks('liked-songs').subscribe({
+      next: res => {
+        this.likedTracks = res.tracks;
+        this.likedLoaded = true;
+        this.loadingLiked = false;
+      },
+      error: () => {
+        this.likedError = 'Failed to load liked songs.';
+        this.loadingLiked = false;
+      }
+    });
+  }
+
   selectPlaylist(playlist: Playlist): void {
     this.plSvc.setSelected(playlist);
     this.router.navigate(['/playlist', playlist.spotifyPlaylistId]);
+  }
+
+  openBtPlaylist(id: string): void {
+    this.router.navigate(['/bt-playlist', id]);
   }
 
   onSearch(query: string): void {

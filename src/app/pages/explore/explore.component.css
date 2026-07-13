@@ -1,0 +1,276 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.content {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 2.5rem 6rem;
+}
+
+/* ── Back button ────────────────────────── */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-bottom: 1.5rem;
+  transition: color var(--t);
+}
+
+.btn-back:hover { color: var(--text); }
+
+/* ── Page title ─────────────────────────── */
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+
+.page-title-icon {
+  display: flex;
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+.page-title-row h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+
+.page-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* ── Section ────────────────────────────── */
+.section {
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.section-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.state-msg {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+}
+
+.state-msg.error { color: #f87171; }
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* ── BooneTunes Curated ─────────────────── */
+.curated-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) { .curated-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .curated-grid { grid-template-columns: 1fr; } }
+
+.curated-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--t), transform var(--t);
+}
+
+.curated-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-3px);
+}
+
+.curated-art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-subtle);
+}
+
+.curated-emoji { font-size: 2.4rem; }
+
+.curated-badge {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8baeff;
+  background: rgba(91, 124, 250, 0.1);
+  border: 1px solid rgba(91, 124, 250, 0.25);
+  padding: 0.18rem 0.6rem;
+  border-radius: 500px;
+}
+
+.curated-body { padding: 0.9rem 1rem 1.1rem; }
+
+.curated-body h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.curated-body p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 0.6rem;
+}
+
+.curated-meta {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.curated-actions { margin-top: 0.6rem; }
+
+.curated-play {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.78rem;
+  border-radius: 500px;
+}
+
+/* ── Spotify Suggested Playlists ────────── */
+/* Matches dashboard.component.css .playlist-grid exactly — same breakpoints
+   as the main library grid so cards read as one consistent system. */
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) { .playlist-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px)  { .playlist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ── Trending Now ───────────────────────── */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+@media (max-width: 760px) { .trending-grid { grid-template-columns: 1fr; } }
+
+.trend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color var(--t), background var(--t);
+}
+
+.trend-row:hover {
+  border-color: var(--border-light);
+  background: var(--surface-hover);
+}
+
+.trend-rank {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--gradient);
+}
+
+.trend-thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.trend-thumb-ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  color: var(--text-dim);
+}
+
+.trend-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.trend-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trend-channel {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trend-views {
+  font-size: 0.74rem;
+  color: var(--teal);
+  margin-top: 0.1rem;
+}
+
+.trend-note {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+@media (max-width: 480px) {
+  .content { padding: 1.5rem 1rem 5.5rem; }
+  .curated-grid { gap: 0.75rem; }
+  .playlist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+}

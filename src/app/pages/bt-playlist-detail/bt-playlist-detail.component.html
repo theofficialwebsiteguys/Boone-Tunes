@@ -1,0 +1,130 @@
+<div class="page">
+  <div class="content">
+
+    <button class="btn-back" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Dashboard
+    </button>
+
+    @if (playlist) {
+
+      <!-- Playlist header -->
+      <div class="pl-header">
+        <div class="cover-wrap">
+          @if (coverSrc) {
+            <img class="cover" [src]="coverSrc" [alt]="playlist.name" />
+          } @else {
+            <div class="cover cover-ph">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+          }
+        </div>
+
+        <div class="pl-meta">
+          <span class="pl-label">Boone Tunes Playlist</span>
+          <h1 class="pl-title">{{ playlist.name }}</h1>
+          <span class="pl-count">
+            {{ playlist.entries.length }} {{ playlist.entries.length === 1 ? 'video' : 'videos' }} saved
+          </span>
+
+          <div class="pl-actions">
+            @if (playlist.entries.length > 0) {
+              <button class="btn-play btn-grad" (click)="playAll()">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Play All
+              </button>
+              <button class="btn-shuffle btn-out" (click)="shuffleAll()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+                  <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+                </svg>
+                Shuffle
+              </button>
+            }
+            <button class="btn-delete" (click)="deletePlaylist()">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entry list -->
+      @if (playlist.entries.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+          </div>
+          <p class="empty-title">No videos saved yet</p>
+          <p class="empty-hint">
+            While watching a music video in the player, tap
+            <strong>Save to Playlist</strong> to add it here.
+          </p>
+        </div>
+      } @else {
+        <div class="entry-list">
+          @for (entry of playlist.entries; track entry.id; let i = $index) {
+            <div class="entry-row" (click)="playFromEntry(entry)">
+
+              <!-- Thumbnail -->
+              <div class="thumb-wrap">
+                @if (entry.videoThumbnail || entry.track.albumArtUrl) {
+                  <img
+                    class="thumb"
+                    [src]="entry.videoThumbnail ?? entry.track.albumArtUrl"
+                    [alt]="entry.videoTitle || entry.track.name"
+                    loading="lazy"
+                  />
+                } @else {
+                  <div class="thumb thumb-ph">♪</div>
+                }
+                <div class="thumb-play">▶</div>
+              </div>
+
+              <!-- Info -->
+              <div class="entry-info">
+                <span class="entry-name">{{ entry.track.name }}</span>
+                <span class="entry-artist">{{ entry.track.artists.join(', ') }}</span>
+                @if (entry.videoTitle && entry.videoTitle !== entry.track.name) {
+                  <span class="entry-video">{{ entry.videoTitle }}</span>
+                }
+              </div>
+
+              <!-- Actions -->
+              <div class="entry-actions">
+                <button
+                  class="action-btn queue-btn"
+                  (click)="addEntryToQueue(entry, $event)"
+                  title="Add to queue"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </button>
+                <button
+                  class="action-btn remove-btn"
+                  (click)="removeEntry(entry.id, $event)"
+                  title="Remove"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+
+    } @else {
+      <div class="state-loading">Loading playlist…</div>
+    }
+
+  </div>
+</div>

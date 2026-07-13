@@ -1,0 +1,74 @@
+<div class="modal-backdrop" (click)="close()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">Save to Video Playlist</h3>
+      <button class="modal-close" (click)="close()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Track + video preview -->
+    <div class="track-preview">
+      @if (videoThumbnail || track.albumArtUrl) {
+        <img class="preview-thumb" [src]="videoThumbnail ?? track.albumArtUrl" [alt]="track.name" />
+      } @else {
+        <div class="preview-thumb preview-thumb-ph">♪</div>
+      }
+      <div class="preview-meta">
+        <span class="preview-track">{{ track.name }}</span>
+        <span class="preview-artist">{{ track.artists.join(', ') }}</span>
+        @if (videoTitle && videoTitle !== track.name) {
+          <span class="preview-video">{{ videoTitle }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- Create new playlist -->
+    <div class="new-pl-form">
+      <input
+        class="new-pl-input"
+        type="text"
+        placeholder="New playlist name…"
+        [(ngModel)]="newPlaylistName"
+        (keydown.enter)="createAndSave()"
+        maxlength="60"
+        autocomplete="off"
+      />
+      <button
+        class="new-pl-btn btn-grad"
+        [disabled]="!newPlaylistName.trim()"
+        (click)="createAndSave()"
+      >Create &amp; Save</button>
+    </div>
+
+    <!-- Existing playlists -->
+    @if (playlists.length > 0) {
+      <div class="pl-list">
+        @for (pl of playlists; track pl.id) {
+          <div class="pl-item" [class.just-saved]="savedToId === pl.id">
+            <div class="pl-item-info">
+              <span class="pl-item-name">{{ pl.name }}</span>
+              <span class="pl-item-count">
+                {{ pl.entries.length }} {{ pl.entries.length === 1 ? 'video' : 'videos' }}
+              </span>
+            </div>
+            @if (savedToId === pl.id) {
+              <span class="pl-saved-badge">✓ Saved</span>
+            } @else if (isAlreadySaved(pl)) {
+              <span class="pl-exists-badge">Already saved</span>
+            } @else {
+              <button class="pl-save-btn" (click)="saveToPlaylist(pl)">Save</button>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="pl-empty">Create a playlist above to get started.</p>
+    }
+
+  </div>
+</div>

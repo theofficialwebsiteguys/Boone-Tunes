@@ -79,6 +79,8 @@
   max-width: 1280px;
   margin: 0 auto;
   width: 100%;
+  padding: 0 2.5rem 4rem;
+  box-sizing: border-box;
 }
 
 /* ── Hero left ──────────────────────────── */
@@ -559,4 +561,123 @@ h1 {
 .cf-copy {
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Responsive — hero section
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤ 1024px): tighten gap + padding ── */
+@media (max-width: 1024px) {
+  .hero {
+    gap: 2.5rem;
+    padding: 0 2rem 3rem;
+  }
+}
+
+/* ── Small tablet / large phone (≤ 860px): single column ── */
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 1.5rem 1.75rem 3rem;
+    gap: 2.5rem;
+    text-align: center;
+  }
+
+  /* Center the badge pill */
+  .badge {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Let sub-heading fill the column */
+  .sub {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Center CTA buttons */
+  .actions {
+    justify-content: center;
+  }
+
+  /* Center feature strip */
+  .feature-strip {
+    justify-content: center;
+  }
+
+  .feat {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Constrain and center the mock player card */
+  .hero-right {
+    max-width: 520px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* ── Mobile (≤ 540px): compact spacing + full-width buttons ── */
+@media (max-width: 540px) {
+  .nav {
+    padding: 1.1rem 1.25rem;
+  }
+
+  .hero {
+    padding: 1rem 1.25rem 2.5rem;
+    gap: 2rem;
+  }
+
+  h1 {
+    letter-spacing: -0.5px;
+    margin-bottom: 1.1rem;
+  }
+
+  .badge {
+    font-size: 0.76rem;
+    padding: 0.35rem 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .sub {
+    font-size: 0.92rem;
+    margin-bottom: 1.75rem;
+  }
+
+  /* Stack buttons full-width on small phones */
+  .actions {
+    flex-direction: column;
+  }
+
+  .btn-connect,
+  .btn-demo {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.92rem;
+  }
+
+  .feature-strip {
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+  }
+
+  .feat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Mock player: tighten internal padding */
+  .mock-info {
+    padding: 0.85rem 1rem;
+    gap: 0.6rem;
+  }
+
+  .mock-dot {
+    width: 26px;
+    height: 26px;
+  }
 }

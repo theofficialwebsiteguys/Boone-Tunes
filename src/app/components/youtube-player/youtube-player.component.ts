@@ -35,8 +35,11 @@ export class YoutubePlayerComponent implements OnInit, OnChanges, OnDestroy {
   private player: any = null;
   private tickerHandle: ReturnType<typeof setInterval> | null = null;
   private playerReady = false;
-  // Prevents play/pause input from fighting loadVideoById's auto-play
+  // Held while a load is settling so we don't act on a mid-buffering signal;
+  // any play/pause request that arrives during this window is re-applied
+  // once it clears (see loadVideo) instead of being silently dropped.
   private justLoaded = false;
+  private loadSettleTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.loadApi();
@@ -59,7 +62,6 @@ export class YoutubePlayerComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  /** Called by the player component to scrub the video */
   seekTo(pct: number): void {
     if (!this.playerReady) return;
     const dur = this.player.getDuration?.() ?? 0;
@@ -69,9 +71,26 @@ export class YoutubePlayerComponent implements OnInit, OnChanges, OnDestroy {
   // ── Private ────────────────────────────────────────────────────────────────
 
   private loadVideo(id: string): void {
+    if (this.loadSettleTimer) clearTimeout(this.loadSettleTimer);
     this.justLoaded = true;
-    this.player.loadVideoById(id);
-    setTimeout(() => (this.justLoaded = false), 1500);
+
+    // loadVideoById always autoplays; cueVideoById never does. Cue instead of
+    // load when the app wants this video paused, so switching tracks or video
+    // types while paused doesn't cause a brief unwanted moment of playback.
+    if (this.playing) {
+      this.player.loadVideoById(id);
+    } else {
+      this.player.cueVideoById(id);
+    }
+
+    this.loadSettleTimer = setTimeout(() => {
+      this.justLoaded = false;
+      // Re-apply whatever play/pause state is current *now* — this corrects
+      // a play/pause request that arrived (and was held back) during the
+      // window above, and gives cueVideoById the explicit playVideo() call
+      // it needs if the app actually wants playback to continue.
+      this.playing ? this.player.playVideo() : this.player.pauseVideo();
+    }, 1500);
   }
 
   private loadApi(): void {
@@ -106,11 +125,11 @@ export class YoutubePlayerComponent implements OnInit, OnChanges, OnDestroy {
         videoId: '',
         playerVars: {
           autoplay:       1,
-          controls:       0,   // hide all native YouTube controls
-          rel:            0,   // no related videos at end
+          controls:       0,
+          rel:            0,
           modestbranding: 1,
-          iv_load_policy: 3,   // hide annotations
-          disablekb:      1,   // disable YouTube keyboard shortcuts
+          iv_load_policy: 3,
+          disablekb:      1,
           fs:             0,
           enablejsapi:    1,
         },
@@ -165,6 +184,7 @@ export class YoutubePlayerComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.tickerHandle) clearInterval(this.tickerHandle);
+    if (this.loadSettleTimer) clearTimeout(this.loadSettleTimer);
     this.player?.destroy?.();
   }
 }

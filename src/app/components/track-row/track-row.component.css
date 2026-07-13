@@ -125,3 +125,69 @@
   background: var(--surface-hover);
   color: var(--text);
 }
+
+/* ── Mobile action buttons (always visible, hidden on desktop) ── */
+.mobile-actions {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .row {
+    padding: 0.55rem 0.75rem;
+    min-height: 60px;
+    gap: 0.65rem;
+  }
+
+  .art {
+    width: 44px;
+    height: 44px;
+  }
+
+  .name   { font-size: 0.88rem; }
+  .artist { font-size: 0.76rem; }
+
+  /* Hide desktop hover strip and duration — replaced by mobile-actions */
+  .desktop-actions,
+  .duration { display: none !important; }
+
+  .mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .mobile-queue,
+  .mobile-play {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: opacity var(--t), transform var(--t);
+  }
+
+  .mobile-queue {
+    width: 30px;
+    height: 30px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+  }
+
+  .mobile-play {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, #5b7cfa, #8b5cf6);
+    color: #fff;
+    padding-left: 2px; /* optical centre for play triangle */
+  }
+
+  .mobile-queue:active,
+  .mobile-play:active {
+    opacity: 0.75;
+    transform: scale(0.93);
+  }
+}

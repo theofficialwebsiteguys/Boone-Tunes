@@ -15,8 +15,9 @@
     <span class="artist">{{ track.artists.join(', ') }}</span>
   </div>
 
+  <!-- Desktop: hover-triggered action strip -->
   @if (hovered) {
-    <div class="actions">
+    <div class="actions desktop-actions">
       <button class="action-play btn-grad" (click)="play.emit(track)">
         ▶ Play
       </button>
@@ -46,4 +47,18 @@
   } @else {
     <span class="duration">{{ formatDuration(track.durationMs) }}</span>
   }
+
+  <!-- Mobile: always-visible play + queue buttons (touch has no hover) -->
+  <div class="mobile-actions">
+    <button class="mobile-queue" title="Add to queue" (click)="queue.emit(track)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+    <button class="mobile-play" title="Play" (click)="play.emit(track)">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    </button>
+  </div>
 </div>

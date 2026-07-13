@@ -35,15 +35,16 @@ export class PlayerControlsComponent implements OnInit, OnDestroy {
   @Input() hasAlternatives = false;
 
   /* Events */
-  @Output() togglePlay    = new EventEmitter<void>();
-  @Output() prev          = new EventEmitter<void>();
-  @Output() next          = new EventEmitter<void>();
-  @Output() toggleShuffle = new EventEmitter<void>();
-  @Output() toggleRepeat  = new EventEmitter<void>();
-  @Output() seekTo        = new EventEmitter<number>();
-  @Output() volumeChange  = new EventEmitter<number>();
-  @Output() changeVideo   = new EventEmitter<void>();
-  @Output() addToPlaylist = new EventEmitter<void>();
+  @Output() togglePlay       = new EventEmitter<void>();
+  @Output() prev             = new EventEmitter<void>();
+  @Output() next              = new EventEmitter<void>();
+  @Output() toggleShuffle     = new EventEmitter<void>();
+  @Output() toggleRepeat      = new EventEmitter<void>();
+  @Output() seekTo             = new EventEmitter<number>();
+  @Output() volumeChange       = new EventEmitter<number>();
+  @Output() changeVideo        = new EventEmitter<void>();
+  @Output() addToPlaylist      = new EventEmitter<void>();
+  @Output() toggleFullscreen   = new EventEmitter<void>();
 
   ngOnInit(): void {
     this.castSub = this.castSvc.castState$.subscribe(s => (this.castState = s));

@@ -3,11 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+/** One video result per type — kept in sync with the backend's VIDEO_CATEGORIES. */
+export type VideoCategory = 'music-video' | 'official-audio' | 'lyric-video' | 'live';
+
 export interface YoutubeVideo {
   videoId: string;
   title: string;
   channelTitle: string;
   thumbnail: string | null;
+  /** Only present on results from searchForTrack — direct-search results are untyped. */
+  category?: VideoCategory;
 }
 
 export interface YoutubeSearchResult {
@@ -18,9 +23,10 @@ export interface YoutubeSearchResult {
 export class YoutubeService {
   private http = inject(HttpClient);
 
-  searchForTrack(track: string, artist: string, maxResults = 5): Observable<YoutubeSearchResult> {
+  /** Returns one video per type (top, live, lyrics, audio), in that order. */
+  searchForTrack(track: string, artist: string): Observable<YoutubeSearchResult> {
     return this.http.get<YoutubeSearchResult>(`${environment.apiUrl}/api/youtube/search`, {
-      params: { track, artist, maxResults: maxResults.toString() },
+      params: { track, artist },
     });
   }
 

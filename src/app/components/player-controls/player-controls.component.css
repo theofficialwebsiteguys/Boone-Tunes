@@ -229,6 +229,9 @@
 /* ── Cast button ─────────────────────────── */
 .cast-btn { flex-shrink: 0; }
 
+/* ── Fullscreen button ───────────────────── */
+.fullscreen-btn { flex-shrink: 0; margin-left: 0.6rem; }
+
 .cast-btn.active {
   color: var(--teal);
   border-color: rgba(34,211,238,0.35);
@@ -282,4 +285,49 @@
   opacity: 0;
   cursor: pointer;
   margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Mobile (≤ 600px): tighter padding, shrink volume, hide change-video ── */
+@media (max-width: 600px) {
+  .controls-wrap {
+    padding: 0.7rem 1rem 0.6rem;
+  }
+
+  .vol-track {
+    width: 60px;
+  }
+
+  .btn-change-video {
+    display: none;
+  }
+}
+
+/* ── Small mobile (≤ 420px): further tighten controls row ── */
+@media (max-width: 420px) {
+  .controls-wrap {
+    padding: 0.6rem 0.75rem 0.5rem;
+  }
+
+  .center-controls {
+    gap: 0.2rem;
+  }
+
+  .ctrl-btn {
+    width: 32px;
+    height: 30px;
+  }
+
+  .play-btn {
+    width: 40px;
+    height: 40px;
+    margin: 0 0.2rem;
+  }
+
+  .vol-track {
+    width: 45px;
+  }
 }

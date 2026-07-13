@@ -1,54 +1,64 @@
 .mini-player {
   position: fixed;
-  bottom: 1.75rem;
-  right: 1.75rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0 0.85rem 0 0;
-  width: 340px;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.04);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.mini-player:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255,255,255,0.07);
-}
-
-/* Gradient border accent */
+/* Gradient top-edge accent — the progress fill animates over it */
 .mini-player::before {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(91,124,250,0.45), rgba(139,92,246,0.4), rgba(34,211,238,0.2));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(91,124,250,0.5), rgba(139,92,246,0.45), rgba(34,211,238,0.3));
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 
-/* ── Video preview ───────────────────────── */
+/* ── Progress bar ─────────────────────────── */
+.mini-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5b7cfa, #8b5cf6, #22d3ee);
+  transition: width 0.5s linear;
+}
+
+/* ── Content row ──────────────────────────── */
+.mini-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  height: 68px;
+  padding: 0 1.5rem 0 0;
+}
+
+/* ── Art / video thumbnail ────────────────── */
 .mini-video-wrap {
   position: relative;
-  width: 90px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   flex-shrink: 0;
   background: #050612;
-  border-radius: 12px 0 0 12px;
   overflow: hidden;
 }
 
-/* Sentinel: AppComponent positions the iframe to fill this exactly */
 .mini-video-slot {
   position: absolute;
   inset: 0;
@@ -70,25 +80,23 @@
   background: var(--surface-2);
 }
 
-/* Transparent overlay so clicks still reach .mini-player (click) handler */
 .mini-video-overlay {
   position: absolute;
   inset: 0;
   z-index: 3;
 }
 
-/* ── Track info ──────────────────────────── */
+/* ── Track info ───────────────────────────── */
 .mini-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  padding: 0.65rem 0;
 }
 
 .mini-name {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -97,20 +105,27 @@
 }
 
 .mini-artist {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ── Controls ────────────────────────────── */
+/* ── Controls ─────────────────────────────── */
+.mini-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .mini-play {
   background: linear-gradient(135deg, #5b7cfa, #8b5cf6);
   border: none;
   color: #fff;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -121,23 +136,52 @@
   position: relative;
   z-index: 4;
 }
-
 .mini-play:hover { opacity: 0.85; }
 
-.mini-expand {
+.mini-next {
   background: none;
   border: none;
   color: var(--text-muted);
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: color 0.15s;
   flex-shrink: 0;
+  border-radius: 50%;
+  transition: color 0.15s;
   position: relative;
   z-index: 4;
 }
+.mini-next:hover { color: var(--text); }
 
-.mini-expand:hover { color: var(--text); }
+.mini-queue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  border-radius: 500px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+  z-index: 4;
+  white-space: nowrap;
+}
+.mini-queue:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+/* ── Small mobile: hide queue chip to save space ── */
+@media (max-width: 380px) {
+  .mini-queue { display: none; }
+  .mini-content { gap: 0.6rem; padding-right: 1rem; }
+}

@@ -8,5 +8,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
 export const environment = {
   production: true,
-  apiUrl: 'https://your-app-name.herokuapp.com',  // ← replace with your Heroku URL
+  apiUrl: 'https://boone-tunes-api-9da7fc53f03b.herokuapp.com',
 };

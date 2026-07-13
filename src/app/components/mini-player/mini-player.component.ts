@@ -31,6 +31,8 @@ export class MiniPlayerComponent implements OnInit, AfterViewChecked, OnDestroy 
   isOnLandingPage  = false;
   isOnSettingsPage = false;
   hasVideo         = false;
+  progress         = 0;
+  queueLength      = 0;
 
   private readonly subs: Subscription[] = [];
   private slotRegistered = false;
@@ -54,8 +56,12 @@ export class MiniPlayerComponent implements OnInit, AfterViewChecked, OnDestroy 
         .subscribe(e => this.updateRouteFlags(e.urlAfterRedirects)),
 
       this.playerSvc.playing$.subscribe(v  => (this.isPlaying    = v)),
+      this.playerSvc.progress$.subscribe(v => (this.progress     = v)),
       this.playerSvc.index$.subscribe(()   => (this.currentItem  = this.playerSvc.currentItem)),
-      this.playerSvc.queue$.subscribe(()   => (this.currentItem  = this.playerSvc.currentItem)),
+      this.playerSvc.queue$.subscribe(q    => {
+        this.currentItem = this.playerSvc.currentItem;
+        this.queueLength = q.length;
+      }),
       this.playerSvc.currentVideoId$.subscribe(id => (this.hasVideo = !!id)),
     );
   }
@@ -72,6 +78,11 @@ export class MiniPlayerComponent implements OnInit, AfterViewChecked, OnDestroy 
   togglePlay(e: Event): void {
     e.stopPropagation();
     this.playerSvc.togglePlay();
+  }
+
+  next(e: Event): void {
+    e.stopPropagation();
+    this.playerSvc.next();
   }
 
   private syncSlot(): void {

@@ -14,7 +14,14 @@
       "Bash(mkdir -p \"d:/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/data\")",
       "Bash(mkdir -p \"d:/Backup_Jared_folder/Jared/TheWebsiteGuys/Repos/boone-tunes-server/scripts\")",
       "Bash(npm show *)",
-      "WebFetch(domain:developers.google.com)"
+      "WebFetch(domain:developers.google.com)",
+      "PowerShell(Get-ChildItem \"d:\\\\Backup_Jared_folder\\\\Jared\\\\TheWebsiteGuys\\\\Repos\\\\boone-tunes-server\" | Where-Object { $_.Name -ne 'node_modules' } | Select-Object Name)",
+      "Bash(npm run *)",
+      "WebFetch(domain:javascript.plainenglish.io)",
+      "WebFetch(domain:medium.com)",
+      "WebSearch",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:miletadulovic.me)"
     ]
   }
 }

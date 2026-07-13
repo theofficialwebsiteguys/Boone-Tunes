@@ -1,0 +1,32 @@
+<div class="page">
+  <div class="content">
+
+    <button class="btn-back" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Articles
+    </button>
+
+    @if (article) {
+      <article class="article-body">
+        <div class="article-hero">
+          <img [src]="article.imageUrl" [alt]="article.title" />
+          <span class="article-tag">{{ article.tag }}</span>
+        </div>
+        <span class="article-date">{{ article.date | date:'MMM d, y' }} · {{ article.readTime }}</span>
+        <h1 class="article-title">{{ article.title }}</h1>
+        <p class="article-excerpt">{{ article.excerpt }}</p>
+
+        <div class="placeholder-notice">
+          This article is a placeholder — real BooneTunes content is coming soon.
+        </div>
+
+        <p class="article-text">{{ article.body }}</p>
+      </article>
+    } @else {
+      <div class="state-msg">Article not found.</div>
+    }
+
+  </div>
+</div>

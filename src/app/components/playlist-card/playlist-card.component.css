@@ -20,7 +20,10 @@
 .card-image {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  /* padding-bottom drives the height so the box is always 1:1.
+     aspect-ratio alone can fail when all children are position:absolute. */
+  height: 0;
+  padding-bottom: 100%;
   overflow: hidden;
   background: var(--surface-2);
 }
@@ -106,4 +109,21 @@
 .card-count {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .card-body {
+    padding: 0.65rem 0.75rem;
+  }
+  .card-title {
+    font-size: 0.85rem;
+  }
+  .card-count {
+    font-size: 0.72rem;
+  }
+  .play-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 0.9rem;
+  }
 }

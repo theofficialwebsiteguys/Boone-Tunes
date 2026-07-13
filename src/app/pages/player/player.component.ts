@@ -13,11 +13,12 @@ import { YoutubeVideo } from '../../services/youtube.service';
 import { QueueItem } from '../../models/queue-item.model';
 import { PlayerControlsComponent } from '../../components/player-controls/player-controls.component';
 import { QueueSidebarComponent } from '../../components/queue-sidebar/queue-sidebar.component';
+import { AddToBtPlaylistModalComponent } from '../../components/add-to-bt-playlist-modal/add-to-bt-playlist-modal.component';
 
 @Component({
   selector: 'app-player',
   standalone: true,
-  imports: [CommonModule, PlayerControlsComponent, QueueSidebarComponent],
+  imports: [CommonModule, PlayerControlsComponent, QueueSidebarComponent, AddToBtPlaylistModalComponent],
   templateUrl: './player.component.html',
   styleUrl: './player.component.css',
 })
@@ -31,9 +32,11 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoSlot')   videoSlotRef!:   ElementRef<HTMLDivElement>;
   @ViewChild('videoScreen') videoScreenRef!: ElementRef<HTMLDivElement>;
 
-  isFullscreen       = false;
-  fsControlsVisible  = false;
-  fsQueueOpen        = false;
+  isFullscreen          = false;
+  fsControlsVisible     = false;
+  fsQueueOpen           = false;
+  showMobileQueue       = false;
+  showAddToPlaylistModal = false;
   private fsHideTimer: ReturnType<typeof setTimeout> | null = null;
 
   @HostListener('document:fullscreenchange')
@@ -158,7 +161,29 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onSeekTo(pct: number): void { this.playerSvc.seekTo(pct); }
   onVolumeChange(v: number): void { this.playerSvc.setVolume(v); }
-  onAddToPlaylist(): void { /* placeholder */ }
+
+  get currentVideoTitle(): string {
+    if (!this.currentVideoId) return this.currentItem?.track.name ?? '';
+    return (
+      this.videos.find(v => v.videoId === this.currentVideoId)?.title
+      ?? this.currentItem?.track.name
+      ?? ''
+    );
+  }
+
+  get currentVideoThumbnail(): string | null {
+    if (!this.currentVideoId) return this.currentItem?.track.albumArtUrl ?? null;
+    return (
+      this.videos.find(v => v.videoId === this.currentVideoId)?.thumbnail
+      ?? this.currentItem?.track.albumArtUrl
+      ?? null
+    );
+  }
+
+  onAddToPlaylist(): void {
+    if (!this.currentItem || !this.currentVideoId) return;
+    this.showAddToPlaylistModal = true;
+  }
 
   private msToTime(ms: number): string {
     const s = Math.floor(ms / 1000);

@@ -1,0 +1,139 @@
+<div class="page">
+  <div class="content">
+
+    <button class="btn-back" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Dashboard
+    </button>
+
+    <div class="page-title-row">
+      <span class="page-title-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+        </svg>
+      </span>
+      <div>
+        <h1>Explore Music</h1>
+        <p class="page-subtitle">Find your next favorite playlist, discover trending artists, and watch the hottest music videos</p>
+      </div>
+    </div>
+
+    <!-- Recommended For You -->
+    <section class="section">
+      <h2 class="section-title">Recommended For You</h2>
+      <p class="section-subtitle">Built from artists already in your library</p>
+
+      @if (loadingRecs) {
+        <div class="state-msg">Finding songs you'll like…</div>
+      } @else if (recsError) {
+        <div class="state-msg error">Couldn't load recommendations right now.</div>
+      } @else if (recTracks.length === 0) {
+        <div class="state-msg">Like a few songs or follow some playlists to unlock recommendations.</div>
+      } @else {
+        <div class="track-list">
+          @for (track of recTracks.slice(0, 8); track track.spotifyId; let i = $index) {
+            <app-track-row
+              [track]="track"
+              [index]="i"
+              (play)="playTrack(track)"
+              (queue)="addToQueue(track)"
+            ></app-track-row>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- BooneTunes Curated -->
+    <section class="section">
+      <h2 class="section-title">BooneTunes Curated</h2>
+      <p class="section-subtitle">Handpicked playlists for every vibe</p>
+
+      <div class="curated-grid">
+        @for (mix of curated; track mix.id) {
+          <div class="curated-card">
+            <div class="curated-art">
+              <span class="curated-emoji">{{ mix.emoji }}</span>
+              <span class="curated-badge">Curated</span>
+            </div>
+            <div class="curated-body">
+              <h3>{{ mix.name }}</h3>
+              <p>{{ mix.description }}</p>
+              @if (mix.loading) {
+                <span class="curated-meta">Loading…</span>
+              } @else if (mix.error || mix.tracks.length === 0) {
+                <span class="curated-meta">Unavailable</span>
+              } @else {
+                <span class="curated-meta">{{ mix.tracks.length }} tracks</span>
+                <div class="curated-actions">
+                  <button class="btn-grad curated-play" (click)="playAll(mix.tracks)">▶ Play</button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Spotify Suggested Playlists -->
+    <section class="section">
+      <h2 class="section-title">Spotify Suggested Playlists</h2>
+      <p class="section-subtitle">Curated by Spotify for you</p>
+
+      @if (loadingSpotifyPlaylists) {
+        <div class="state-msg">Loading playlists…</div>
+      } @else if (spotifyPlaylistsError) {
+        <div class="state-msg error">Couldn't load Spotify playlists right now.</div>
+      } @else if (spotifyPlaylists.length === 0) {
+        <div class="state-msg">No playlists available right now.</div>
+      } @else {
+        <div class="playlist-grid">
+          @for (pl of spotifyPlaylists; track pl.spotifyPlaylistId) {
+            <app-playlist-card
+              [playlist]="pl"
+              (selected)="openSpotifyPlaylist($event)"
+            ></app-playlist-card>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Trending Now -->
+    <section class="section">
+      <h2 class="section-title">Trending Now</h2>
+      <p class="section-subtitle">Most popular music videos today</p>
+
+      @if (loadingTrending) {
+        <div class="state-msg">Loading trending videos…</div>
+      } @else if (trendingError) {
+        <div class="state-msg error">Couldn't load trending videos right now.</div>
+      } @else if (trending.length === 0) {
+        <div class="state-msg">Nothing trending right now.</div>
+      } @else {
+        <div class="trending-grid">
+          @for (video of trending; track video.videoId; let i = $index) {
+            <div class="trend-row" (click)="playTrending(video)">
+              <span class="trend-rank">#{{ i + 1 }}</span>
+              @if (video.thumbnail) {
+                <img class="trend-thumb" [src]="video.thumbnail" [alt]="video.title" loading="lazy" />
+              } @else {
+                <div class="trend-thumb trend-thumb-ph">▶</div>
+              }
+              <div class="trend-body">
+                <p class="trend-title" [title]="video.title">{{ video.title }}</p>
+                <p class="trend-channel">{{ video.channelTitle }}</p>
+                @if (video.viewCount !== null) {
+                  <p class="trend-views">{{ formatViews(video.viewCount) }}</p>
+                }
+              </div>
+              <span class="trend-note">♪</span>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+  </div>
+</div>

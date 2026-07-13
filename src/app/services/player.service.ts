@@ -3,17 +3,19 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { Track } from '../models/track.model';
 import { QueueItem } from '../models/queue-item.model';
-import { YoutubeService, YoutubeVideo } from './youtube.service';
+import { YoutubeService, YoutubeVideo, VideoCategory } from './youtube.service';
+import { ExploreService } from './explore.service';
 
 const STORAGE_KEY = 'bt-player-state';
 const PREF_KEY    = 'bt-video-pref';
 
-export type VideoPreference = 'music-video' | 'official-audio' | 'lyric-video' | 'live';
+export type VideoPreference = VideoCategory;
 
 @Injectable({ providedIn: 'root' })
 export class PlayerService {
-  private readonly router = inject(Router);
-  private readonly ytSvc  = inject(YoutubeService);
+  private readonly router     = inject(Router);
+  private readonly ytSvc      = inject(YoutubeService);
+  private readonly exploreSvc = inject(ExploreService);
 
   private readonly queueS        = new BehaviorSubject<QueueItem[]>([]);
   private readonly indexS        = new BehaviorSubject<number>(-1);
@@ -136,6 +138,48 @@ export class PlayerService {
   /** Add a single track to play next (after the currently playing track). */
   addToQueue(track: Track): void {
     this.addPlayNext(track);
+  }
+
+  /** Replace the queue with a list of pre-built QueueItems and start playing at startIndex.
+   *  Used by BT playlists where videoIds are already known. */
+  playItems(items: QueueItem[], startIndex = 0): void {
+    if (!items.length) return;
+    this.playingS.next(false);
+    this.queueS.next(items);
+    this.indexS.next(Math.max(0, Math.min(startIndex, items.length - 1)));
+    this.videosS.next([]);
+    this.currentVideoS.next(null);
+    this.resetTime();
+    this.lastFetchedIndex = -2;
+    this.fetchVideos();
+    this.saveState();
+    this.router.navigate(['/player']);
+  }
+
+  /** Add a pre-built QueueItem to the play-next slot (used for BT playlist entries). */
+  addQueueItem(item: QueueItem): void {
+    const qItem = { ...item, isPlayNext: true };
+    if (this.queue.length === 0) {
+      this.queueS.next([qItem]);
+      this.indexS.next(0);
+      this.resetTime();
+      this.playingS.next(false);
+      this.lastFetchedIndex = -2;
+      this.fetchVideos();
+      this.saveState();
+      this.router.navigate(['/player']);
+      return;
+    }
+    let insertAt = this.index + 1;
+    const q = this.queue;
+    for (let i = this.index + 1; i < q.length; i++) {
+      if (q[i].isPlayNext) insertAt = i + 1;
+      else break;
+    }
+    const newQ = [...q];
+    newQ.splice(insertAt, 0, qItem);
+    this.queueS.next(newQ);
+    this.saveState();
   }
 
   /** Add a YouTube video directly to the queue without needing a Spotify track.
@@ -272,7 +316,7 @@ export class PlayerService {
         this.fetchVideos();
         this.saveState();
       } else {
-        this.playingS.next(false);
+        this.autoplayRecommended();
       }
       return;
     }
@@ -280,6 +324,38 @@ export class PlayerService {
     this.resetTime();
     this.fetchVideos();
     this.saveState();
+  }
+
+  /** Called when the queue runs out (repeat off). Seeds recommendations from
+   *  artists already in the queue and keeps playing instead of stopping.
+   *  Falls back to stopping playback if there are no usable seeds, the
+   *  fetch fails, or every recommended track is already in the queue. */
+  private autoplayRecommended(): void {
+    const seeds = Array.from(new Set(this.queue.flatMap(item => item.track.artists))).slice(0, 5);
+    if (seeds.length === 0) {
+      this.playingS.next(false);
+      return;
+    }
+
+    const seenIds = new Set(this.queue.map(item => item.track.spotifyId));
+
+    this.exploreSvc.getRecommendations(seeds).subscribe({
+      next: res => {
+        const fresh = res.tracks.filter(t => !seenIds.has(t.spotifyId));
+        if (fresh.length === 0) {
+          this.playingS.next(false);
+          return;
+        }
+        const startIndex = this.queue.length;
+        const newItems: QueueItem[] = fresh.map(t => ({ track: t, youtubeVideoId: null, status: 'ready' }));
+        this.queueS.next([...this.queue, ...newItems]);
+        this.indexS.next(startIndex);
+        this.resetTime();
+        this.fetchVideos();
+        this.saveState();
+      },
+      error: () => { this.playingS.next(false); },
+    });
   }
 
   previous(): void {
@@ -363,23 +439,12 @@ export class PlayerService {
     this.saveState();
   }
 
+  /** Videos from searchForTrack are already tagged with their category by the
+   *  backend (one targeted search per type), so this is a direct lookup rather
+   *  than guessing from the title. */
   private pickPreferredVideo(videos: YoutubeVideo[]): YoutubeVideo | null {
     if (!videos.length) return null;
-    switch (this.videoPreference) {
-      case 'lyric-video':
-        return videos.find(v => /lyric/i.test(v.title)) ?? videos[0];
-      case 'live':
-        return videos.find(v => /\blive\b/i.test(v.title)) ?? videos[0];
-      case 'official-audio':
-        return videos.find(v => /official\s+audio|audio\s+only/i.test(v.title)) ?? videos[0];
-      case 'music-video':
-      default:
-        // Prefer a result that doesn't look like a lyric, live, or audio-only video
-        return (
-          videos.find(v => !/lyric|live|audio\s+only|karaoke/i.test(v.title)) ??
-          videos[0]
-        );
-    }
+    return videos.find(v => v.category === this.videoPreference) ?? videos[0];
   }
 
   fetchVideos(force = false): void {
@@ -402,7 +467,7 @@ export class PlayerService {
     const track  = item.track.name;
     const artist = item.track.artists[0] ?? '';
 
-    this.ytSvc.searchForTrack(track, artist, 5).subscribe({
+    this.ytSvc.searchForTrack(track, artist).subscribe({
       next: result => {
         this.videosS.next(result.videos);
         this.currentVideoS.next(this.pickPreferredVideo(result.videos)?.videoId ?? null);

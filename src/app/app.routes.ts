@@ -36,5 +36,35 @@ export const routes: Routes = [
       import('./pages/settings/settings.component').then(m => m.SettingsComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'bt-playlist/:id',
+    loadComponent: () =>
+      import('./pages/bt-playlist-detail/bt-playlist-detail.component').then(m => m.BtPlaylistDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'explore',
+    loadComponent: () =>
+      import('./pages/explore/explore.component').then(m => m.ExploreComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'products',
+    loadComponent: () =>
+      import('./pages/products/products.component').then(m => m.ProductsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'articles',
+    loadComponent: () =>
+      import('./pages/articles/articles.component').then(m => m.ArticlesComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'articles/:id',
+    loadComponent: () =>
+      import('./pages/article-detail/article-detail.component').then(m => m.ArticleDetailComponent),
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: '' }
 ];

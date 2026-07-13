@@ -90,5 +90,26 @@
       }
     </div>
 
+    <!-- You might also like -->
+    @if (loadingRecommended || recommended.length > 0) {
+      <div class="tracks-section recommended-section">
+        <h2 class="section-title">You might also like</h2>
+        @if (loadingRecommended) {
+          <div class="state-msg">Finding more songs…</div>
+        } @else {
+          <div class="track-list">
+            @for (track of recommended; track track.spotifyId; let i = $index) {
+              <app-track-row
+                [track]="track"
+                [index]="i"
+                (play)="playTrack(track)"
+                (queue)="addToQueue(track)"
+              ></app-track-row>
+            }
+          </div>
+        }
+      </div>
+    }
+
   </main>
 </div>
