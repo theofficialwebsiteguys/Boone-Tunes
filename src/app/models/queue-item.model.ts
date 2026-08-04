@@ -1,6 +1,6 @@
 import { Track } from './track.model';
 
-export type QueueItemStatus = 'ready' | 'loading' | 'error';
+export type QueueItemStatus = 'ready' | 'loading' | 'no_match' | 'quota_blocked' | 'error';
 
 export interface QueueItem {
   track: Track;

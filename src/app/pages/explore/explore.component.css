@@ -166,19 +166,6 @@
   border-radius: 500px;
 }
 
-/* ── Spotify Suggested Playlists ────────── */
-/* Matches dashboard.component.css .playlist-grid exactly — same breakpoints
-   as the main library grid so cards read as one consistent system. */
-.playlist-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  align-items: start;
-}
-
-@media (max-width: 1100px) { .playlist-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 760px)  { .playlist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
 /* ── Trending Now ───────────────────────── */
 .trending-grid {
   display: grid;
@@ -272,5 +259,4 @@
 @media (max-width: 480px) {
   .content { padding: 1.5rem 1rem 5.5rem; }
   .curated-grid { gap: 0.75rem; }
-  .playlist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
 }

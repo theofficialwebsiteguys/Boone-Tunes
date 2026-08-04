@@ -2,20 +2,33 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { Track } from '../models/track.model';
-import { QueueItem } from '../models/queue-item.model';
+import { QueueItem, QueueItemStatus } from '../models/queue-item.model';
 import { YoutubeService, YoutubeVideo, VideoCategory } from './youtube.service';
+import { TrackResolverService, ResolutionResult } from './track-resolver.service';
 import { ExploreService } from './explore.service';
+import { environment } from '../../environments/environment';
 
 const STORAGE_KEY = 'bt-player-state';
 const PREF_KEY    = 'bt-video-pref';
 
 export type VideoPreference = VideoCategory;
 
+/** Maps a backend resolution status onto the small state set the queue/UI understand. */
+const STATUS_MAP: Record<string, QueueItemStatus> = {
+  resolved: 'ready',
+  manual_override: 'ready',
+  no_match: 'no_match',
+  unavailable: 'no_match',
+  quota_blocked: 'quota_blocked',
+  temporarily_failed: 'error',
+};
+
 @Injectable({ providedIn: 'root' })
 export class PlayerService {
-  private readonly router     = inject(Router);
-  private readonly ytSvc      = inject(YoutubeService);
-  private readonly exploreSvc = inject(ExploreService);
+  private readonly router      = inject(Router);
+  private readonly ytSvc       = inject(YoutubeService);
+  private readonly resolverSvc = inject(TrackResolverService);
+  private readonly exploreSvc  = inject(ExploreService);
 
   private readonly queueS        = new BehaviorSubject<QueueItem[]>([]);
   private readonly indexS        = new BehaviorSubject<number>(-1);
@@ -29,11 +42,18 @@ export class PlayerService {
   private readonly currentVideoS = new BehaviorSubject<string | null>(null);
   private readonly videosS       = new BehaviorSubject<YoutubeVideo[]>([]);
   private readonly loadingVideoS = new BehaviorSubject<boolean>(false);
+  /** Backend resolution status for the CURRENT track — drives the "no match / at capacity / failed" messaging. */
+  private readonly resolutionStatusS = new BehaviorSubject<string | null>(null);
   private readonly seekS         = new Subject<number>();
   private readonly videoPrefS    = new BehaviorSubject<VideoPreference>(
     (localStorage.getItem(PREF_KEY) as VideoPreference) ?? 'music-video'
   );
   private lastFetchedIndex       = -2;
+  /** Bumped whenever the queue is wholesale replaced/cleared — lets stale prefetch/interactive
+   *  responses recognize they no longer apply instead of mutating an unrelated queue. */
+  private resolveGeneration      = 0;
+  /** spotifyIds with an in-flight prefetch request, so we never issue two for the same track. */
+  private readonly prefetchInFlight = new Set<string>();
 
   constructor() { this.restoreState(); }
 
@@ -49,6 +69,7 @@ export class PlayerService {
   currentVideoId$ = this.currentVideoS.asObservable();
   videos$         = this.videosS.asObservable();
   loadingVideo$   = this.loadingVideoS.asObservable();
+  resolutionStatus$ = this.resolutionStatusS.asObservable();
   /** One-shot seek commands forwarded to the YouTube player */
   seekCommand$       = this.seekS.asObservable();
   videoPreference$   = this.videoPrefS.asObservable();
@@ -88,7 +109,7 @@ export class PlayerService {
     if (wasEmpty) {
       this.indexS.next(startIndex);
       this.resetTime();
-      this.playingS.next(false);
+      this.play();
       this.fetchVideos();
     }
     this.saveState();
@@ -115,7 +136,7 @@ export class PlayerService {
       this.queueS.next([item]);
       this.indexS.next(0);
       this.resetTime();
-      this.playingS.next(false);
+      this.play();
       this.fetchVideos();
       this.saveState();
       this.router.navigate(['/player']);
@@ -144,7 +165,8 @@ export class PlayerService {
    *  Used by BT playlists where videoIds are already known. */
   playItems(items: QueueItem[], startIndex = 0): void {
     if (!items.length) return;
-    this.playingS.next(false);
+    this.cancelPendingPrefetch();
+    this.play();
     this.queueS.next(items);
     this.indexS.next(Math.max(0, Math.min(startIndex, items.length - 1)));
     this.videosS.next([]);
@@ -163,7 +185,7 @@ export class PlayerService {
       this.queueS.next([qItem]);
       this.indexS.next(0);
       this.resetTime();
-      this.playingS.next(false);
+      this.play();
       this.lastFetchedIndex = -2;
       this.fetchVideos();
       this.saveState();
@@ -206,7 +228,7 @@ export class PlayerService {
       this.queueS.next([item]);
       this.indexS.next(0);
       this.resetTime();
-      this.playingS.next(false);
+      this.play();
       this.fetchVideos();
       this.saveState();
       this.router.navigate(['/player']);
@@ -238,6 +260,7 @@ export class PlayerService {
 
     if (q.length === 0) {
       // Queue is now empty — stop everything
+      this.cancelPendingPrefetch();
       this.playingS.next(false);
       this.queueS.next([]);
       this.indexS.next(-1);
@@ -298,6 +321,7 @@ export class PlayerService {
 
   playAtIndex(i: number): void {
     if (i >= 0 && i < this.queue.length) {
+      this.play();
       this.indexS.next(i);
       this.resetTime();
       this.fetchVideos();
@@ -308,6 +332,7 @@ export class PlayerService {
   next(): void {
     const q = this.queue;
     if (!q.length) return;
+    this.play();
     const n = this.index + 1;
     if (n >= q.length) {
       if (this.isRepeat) {
@@ -359,6 +384,7 @@ export class PlayerService {
   }
 
   previous(): void {
+    this.play();
     this.indexS.next(Math.max(0, this.index - 1));
     this.resetTime();
     this.fetchVideos();
@@ -366,6 +392,12 @@ export class PlayerService {
   }
 
   togglePlay(): void { this.playingS.next(!this.isPlaying); }
+
+  /** Force playback on — used whenever the current track changes (a new
+   *  selection should always play, regardless of whatever the previous
+   *  track's pause state was). Plain pause/resume of the SAME track still
+   *  goes through togglePlay(). */
+  play(): void { this.playingS.next(true); }
 
   /** Toggle shuffle. Turning ON re-shuffles the unplayed portion of the queue
    *  (everything after the current track) so the upcoming order changes immediately. */
@@ -416,6 +448,7 @@ export class PlayerService {
   }
 
   clearQueue(): void {
+    this.cancelPendingPrefetch();
     this.playingS.next(false);
     this.queueS.next([]);
     this.indexS.next(-1);
@@ -447,34 +480,134 @@ export class PlayerService {
     return videos.find(v => v.category === this.videoPreference) ?? videos[0];
   }
 
+  /**
+   * Resolves the CURRENT track to a playable video — at most one YouTube
+   * search, via the centralized backend resolver (which itself checks its
+   * persistent cache first). Never fetches "Switch video" alternates; those
+   * are loaded lazily, only if the user explicitly opens that row (see
+   * loadVideoAlternatives()).
+   */
   fetchVideos(force = false): void {
     const item = this.currentItem;
     if (!item) return;
+    // Duplicate-click / duplicate-lifecycle guard: skip if this exact index
+    // was already the last one fetched, unless the caller explicitly forces it.
     if (!force && this.indexS.value === this.lastFetchedIndex) return;
     this.lastFetchedIndex = this.indexS.value;
 
-    // YouTube-sourced tracks already have a known videoId — skip the API search.
+    // Already-known video (BT playlist entry, YouTube-search add, or a
+    // previously prefetched/resolved queue item) — zero API calls.
     if (item.youtubeVideoId) {
       this.videosS.next([]);
       this.currentVideoS.next(item.youtubeVideoId);
       this.loadingVideoS.next(false);
+      this.resolutionStatusS.next('resolved');
+      this.prefetchUpcoming();
       return;
     }
 
     this.loadingVideoS.next(true);
     this.videosS.next([]);
+    this.resolutionStatusS.next('resolving');
+    this.updateItemStatus(this.index, 'loading');
+
+    const generation = this.resolveGeneration;
+    const targetIndex = this.index;
+
+    this.resolverSvc.resolve(item.track, 'interactive').subscribe({
+      next: result => {
+        if (generation !== this.resolveGeneration || targetIndex !== this.index) return; // stale
+        this.loadingVideoS.next(false);
+        this.resolutionStatusS.next(result.status);
+        this.applyResolutionToItem(targetIndex, result);
+        this.currentVideoS.next(result.status === 'resolved' || result.status === 'manual_override' ? result.videoId : null);
+        if (result.status === 'resolved' || result.status === 'manual_override') this.prefetchUpcoming();
+      },
+      error: () => {
+        if (generation !== this.resolveGeneration || targetIndex !== this.index) return;
+        this.loadingVideoS.next(false);
+        this.resolutionStatusS.next('temporarily_failed');
+        this.updateItemStatus(targetIndex, 'error');
+      },
+    });
+  }
+
+  /** Explicitly loads the "Switch video" alternates for the current track —
+   *  only ever called from the UI on demand, never automatically. */
+  loadVideoAlternatives(): void {
+    const item = this.currentItem;
+    if (!item) return;
 
     const track  = item.track.name;
     const artist = item.track.artists[0] ?? '';
 
     this.ytSvc.searchForTrack(track, artist).subscribe({
-      next: result => {
-        this.videosS.next(result.videos);
-        this.currentVideoS.next(this.pickPreferredVideo(result.videos)?.videoId ?? null);
-        this.loadingVideoS.next(false);
-      },
-      error: () => { this.loadingVideoS.next(false); },
+      next: result => this.videosS.next(result.videos),
+      error: () => { /* non-fatal — alternates are a bonus, current video keeps playing */ },
     });
+  }
+
+  private updateItemStatus(index: number, status: QueueItemStatus): void {
+    const q = this.queueS.value;
+    if (index < 0 || index >= q.length) return;
+    const next = [...q];
+    next[index] = { ...next[index], status };
+    this.queueS.next(next);
+  }
+
+  private applyResolutionToItem(index: number, result: ResolutionResult): void {
+    const q = this.queueS.value;
+    if (index < 0 || index >= q.length) return;
+    const isResolved = result.status === 'resolved' || result.status === 'manual_override';
+    const next = [...q];
+    next[index] = {
+      ...next[index],
+      youtubeVideoId: isResolved ? result.videoId : null,
+      status: STATUS_MAP[result.status] ?? 'error',
+    };
+    this.queueS.next(next);
+  }
+
+  /** Silently resolves the next N upcoming tracks (current + N, per
+   *  environment.youtubePrefetchCount) in the background. Low concurrency,
+   *  never expands beyond the window, skips tracks already known/terminal,
+   *  and is abandoned wholesale whenever the queue changes (see cancelPendingPrefetch). */
+  private prefetchUpcoming(): void {
+    const count = environment.youtubePrefetchCount ?? 2;
+    if (count <= 0) return;
+
+    const generation = this.resolveGeneration;
+    const q = this.queueS.value;
+    const baseIndex = this.indexS.value;
+
+    for (let offset = 1; offset <= count; offset++) {
+      const idx = baseIndex + offset;
+      if (idx >= q.length) break;
+
+      const item = q[idx];
+      const spotifyId = item.track.spotifyId;
+      if (item.youtubeVideoId || item.status === 'no_match' || item.status === 'quota_blocked') continue;
+      if (this.prefetchInFlight.has(spotifyId)) continue;
+
+      this.prefetchInFlight.add(spotifyId);
+      this.resolverSvc.resolve(item.track, 'prefetch').subscribe({
+        next: result => {
+          this.prefetchInFlight.delete(spotifyId);
+          if (generation !== this.resolveGeneration) return; // queue changed — discard
+          const liveIndex = this.queueS.value.findIndex(qi => qi.track.spotifyId === spotifyId);
+          if (liveIndex !== -1) this.applyResolutionToItem(liveIndex, result);
+        },
+        error: () => { this.prefetchInFlight.delete(spotifyId); },
+      });
+    }
+  }
+
+  /** Invalidates any in-flight interactive/prefetch resolutions so their
+   *  results are ignored once they land — called whenever the queue is
+   *  wholesale replaced or emptied (new playlist, cleared queue). */
+  private cancelPendingPrefetch(): void {
+    this.resolveGeneration++;
+    this.prefetchInFlight.clear();
   }
 
   private resetTime(): void {

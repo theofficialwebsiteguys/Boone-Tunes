@@ -14,11 +14,12 @@ import { QueueItem } from '../../models/queue-item.model';
 import { PlayerControlsComponent } from '../../components/player-controls/player-controls.component';
 import { QueueSidebarComponent } from '../../components/queue-sidebar/queue-sidebar.component';
 import { AddToBtPlaylistModalComponent } from '../../components/add-to-bt-playlist-modal/add-to-bt-playlist-modal.component';
+import { MarqueeTextComponent } from '../../components/marquee-text/marquee-text.component';
 
 @Component({
   selector: 'app-player',
   standalone: true,
-  imports: [CommonModule, PlayerControlsComponent, QueueSidebarComponent, AddToBtPlaylistModalComponent],
+  imports: [CommonModule, PlayerControlsComponent, QueueSidebarComponent, AddToBtPlaylistModalComponent, MarqueeTextComponent],
   templateUrl: './player.component.html',
   styleUrl: './player.component.css',
 })
@@ -64,6 +65,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   videos:       YoutubeVideo[]    = [];
   currentVideoId: string | null   = null;
   loadingVideo    = false;
+  resolutionStatus: string | null = null;
 
   private readonly subs: Subscription[] = [];
 
@@ -108,6 +110,7 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.playerSvc.totalMs$.subscribe(v        => (this.totalMs       = v)),
       this.playerSvc.videos$.subscribe(v         => (this.videos        = v)),
       this.playerSvc.loadingVideo$.subscribe(v   => (this.loadingVideo  = v)),
+      this.playerSvc.resolutionStatus$.subscribe(s => (this.resolutionStatus = s)),
       this.playerSvc.currentVideoId$.subscribe(id => (this.currentVideoId = id)),
       this.playerSvc.index$.subscribe(i             => (this.index           = i)),
       this.playerSvc.videoPreference$.subscribe(p   => (this.videoPreference = p)),
@@ -116,9 +119,16 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.portalSvc.setSlot(this.videoSlotRef.nativeElement);
-    // After hard refresh, state restores from localStorage but fetchVideos() is
-    // never triggered. Defer past the current change-detection cycle to avoid NG0100.
+    // currentVideoId is only ever unset here after a hard refresh (it isn't
+    // persisted to localStorage, unlike the queue/index) — a genuinely fresh
+    // entry, so start playing once the video resolves. If it's already set,
+    // this track was already established earlier THIS session (the user
+    // navigated away and back) — leave play/pause exactly as they left it;
+    // an existing pause on the current track is intentional, not something
+    // re-entering the page should override.
     if (this.playerSvc.currentItem && !this.playerSvc.currentVideoId) {
+      this.playerSvc.play();
+      // Defer past the current change-detection cycle to avoid NG0100.
       setTimeout(() => this.playerSvc.fetchVideos(), 0);
     }
   }
@@ -161,6 +171,14 @@ export class PlayerComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onSeekTo(pct: number): void { this.playerSvc.seekTo(pct); }
   onVolumeChange(v: number): void { this.playerSvc.setVolume(v); }
+
+  /** Loads "Switch video" alternates on demand — never automatic. */
+  onChangeVideo(): void { this.playerSvc.loadVideoAlternatives(); }
+
+  /** Re-attempts resolution for the current track (e.g. after a transient failure). */
+  retryCurrent(): void { this.playerSvc.fetchVideos(true); }
+
+  skipToNext(): void { this.playerSvc.next(); }
 
   get currentVideoTitle(): string {
     if (!this.currentVideoId) return this.currentItem?.track.name ?? '';

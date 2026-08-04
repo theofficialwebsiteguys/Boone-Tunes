@@ -5,10 +5,9 @@ import { PlaylistService } from '../../services/playlist.service';
 import { SearchService } from '../../services/search.service';
 import { PlayerService } from '../../services/player.service';
 import { Track } from '../../models/track.model';
-import { Playlist } from '../../models/playlist.model';
 import { TrendingVideo } from '../../models/recommendation.model';
 import { TrackRowComponent } from '../../components/track-row/track-row.component';
-import { PlaylistCardComponent } from '../../components/playlist-card/playlist-card.component';
+import { MoodQuizComponent } from '../../components/mood-quiz/mood-quiz.component';
 
 interface CuratedPlaylist {
   id: string;
@@ -36,7 +35,7 @@ const CURATED_DEFS: Omit<CuratedPlaylist, 'tracks' | 'loading' | 'error'>[] = [
 @Component({
   selector: 'app-explore',
   standalone: true,
-  imports: [TrackRowComponent, PlaylistCardComponent],
+  imports: [TrackRowComponent, MoodQuizComponent],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.css',
 })
@@ -53,10 +52,6 @@ export class ExploreComponent implements OnInit {
 
   curated: CuratedPlaylist[] = CURATED_DEFS.map(d => ({ ...d, tracks: [], loading: true, error: false }));
 
-  spotifyPlaylists: Playlist[] = [];
-  loadingSpotifyPlaylists = true;
-  spotifyPlaylistsError = false;
-
   trending: TrendingVideo[] = [];
   loadingTrending = true;
   trendingError = false;
@@ -64,7 +59,6 @@ export class ExploreComponent implements OnInit {
   ngOnInit(): void {
     this.loadRecommendations();
     this.loadCurated();
-    this.loadSpotifyPlaylists();
     this.loadTrending();
   }
 
@@ -122,31 +116,6 @@ export class ExploreComponent implements OnInit {
         error: () => { this.curated[i] = { ...this.curated[i], loading: false, error: true }; },
       });
     });
-  }
-
-  /* ── Spotify Suggested Playlists ──────────────────────────────────── */
-
-  private loadSpotifyPlaylists(): void {
-    this.exploreSvc.getSpotifyPlaylists().subscribe({
-      next: res => {
-        this.spotifyPlaylists = res.playlists.map(pl => ({
-          id: 0,
-          spotifyPlaylistId: pl.id,
-          name: pl.name,
-          description: pl.description,
-          trackCount: pl.trackCount,
-          imageUrl: pl.imageUrl,
-          isPublic: true,
-        }));
-        this.loadingSpotifyPlaylists = false;
-      },
-      error: () => { this.spotifyPlaylistsError = true; this.loadingSpotifyPlaylists = false; },
-    });
-  }
-
-  openSpotifyPlaylist(pl: Playlist): void {
-    this.plSvc.setSelected(pl);
-    this.router.navigate(['/playlist', pl.spotifyPlaylistId]);
   }
 
   /* ── Trending Now ──────────────────────────────────────────────────── */

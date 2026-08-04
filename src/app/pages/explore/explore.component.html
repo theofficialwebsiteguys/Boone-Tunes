@@ -21,6 +21,9 @@
       </div>
     </div>
 
+    <!-- Mood quiz / vibe finder -->
+    <app-mood-quiz></app-mood-quiz>
+
     <!-- Recommended For You -->
     <section class="section">
       <h2 class="section-title">Recommended For You</h2>
@@ -75,29 +78,6 @@
           </div>
         }
       </div>
-    </section>
-
-    <!-- Spotify Suggested Playlists -->
-    <section class="section">
-      <h2 class="section-title">Spotify Suggested Playlists</h2>
-      <p class="section-subtitle">Curated by Spotify for you</p>
-
-      @if (loadingSpotifyPlaylists) {
-        <div class="state-msg">Loading playlists…</div>
-      } @else if (spotifyPlaylistsError) {
-        <div class="state-msg error">Couldn't load Spotify playlists right now.</div>
-      } @else if (spotifyPlaylists.length === 0) {
-        <div class="state-msg">No playlists available right now.</div>
-      } @else {
-        <div class="playlist-grid">
-          @for (pl of spotifyPlaylists; track pl.spotifyPlaylistId) {
-            <app-playlist-card
-              [playlist]="pl"
-              (selected)="openSpotifyPlaylist($event)"
-            ></app-playlist-card>
-          }
-        </div>
-      }
     </section>
 
     <!-- Trending Now -->

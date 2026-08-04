@@ -1,0 +1,9 @@
+<div class="marquee-viewport" #viewport>
+  <span
+    class="marquee-track"
+    #track
+    [class.animate]="isOverflowing"
+    [style.--marquee-distance.px]="distancePx"
+    [style.--marquee-duration.s]="durationS"
+  >{{ text }}</span>
+</div>

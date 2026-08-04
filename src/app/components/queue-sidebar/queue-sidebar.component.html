@@ -32,7 +32,7 @@
         </div>
 
         <div class="q-status">
-          @if (currentItem.status === 'error') {
+          @if (currentItem.status === 'error' || currentItem.status === 'no_match' || currentItem.status === 'quota_blocked') {
             <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" width="18" height="18">
               <circle cx="12" cy="12" r="10"/>
               <line x1="15" y1="9" x2="9" y2="15"/>

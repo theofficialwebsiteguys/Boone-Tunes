@@ -9,4 +9,5 @@
 export const environment = {
   production: true,
   apiUrl: 'https://boone-tunes-api-9da7fc53f03b.herokuapp.com',
+  youtubePrefetchCount: 2,
 };

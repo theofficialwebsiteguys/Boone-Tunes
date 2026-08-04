@@ -130,8 +130,26 @@
         </div>
       </section>
 
-      <!-- Mood quiz / vibe finder -->
-      <app-mood-quiz></app-mood-quiz>
+      <!-- Vibe finder teaser -->
+      <a class="vibe-teaser" routerLink="/explore">
+        <div class="vibe-teaser-glow vibe-teaser-glow-1"></div>
+        <div class="vibe-teaser-glow vibe-teaser-glow-2"></div>
+        <div class="vibe-teaser-inner">
+          <span class="vibe-teaser-icon">🎧</span>
+          <div class="vibe-teaser-text">
+            <h2 class="vibe-teaser-title">Not sure what to listen to?</h2>
+            <p class="vibe-teaser-desc">
+              Find your vibe, discover trending playlists, and explore new artists over on Explore Music.
+            </p>
+          </div>
+          <span class="vibe-teaser-btn btn-grad">
+            Explore Music
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+        </div>
+      </a>
 
       <!-- Playlist grid -->
       <section class="section">
@@ -200,6 +218,11 @@
                 ></app-track-row>
               }
             </div>
+            @if (likedHasMore) {
+              <button class="btn-out" [disabled]="loadingMoreLiked" (click)="loadMoreLiked()">
+                {{ loadingMoreLiked ? 'Loading…' : 'Load more' }}
+              </button>
+            }
           }
         } @else if (loadingPlaylists) {
           <div class="grid-skeleton">
@@ -260,7 +283,7 @@
             </svg>
           </div>
         </a>
-        <a class="feature-card feat-purple" routerLink="/articles">
+        <!-- <a class="feature-card feat-purple" routerLink="/articles">
           <div class="feat-card-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h13a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"/>
@@ -278,7 +301,7 @@
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </div>
-        </a>
+        </a> -->
       </div>
 
     }

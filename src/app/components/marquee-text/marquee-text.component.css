@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.marquee-viewport {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marquee-track.animate {
+  animation: marquee-bounce var(--marquee-duration, 8s) ease-in-out infinite;
+}
+
+@keyframes marquee-bounce {
+  0%, 12%   { transform: translateX(0); }
+  45%, 60%  { transform: translateX(calc(-1 * var(--marquee-distance, 0px))); }
+  93%, 100% { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track.animate {
+    animation: none;
+  }
+}

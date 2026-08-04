@@ -28,12 +28,6 @@ export class PlayerControlsComponent implements OnInit, OnDestroy {
   @Input() currentTime = '0:00';
   @Input() totalTime   = '0:00';
 
-  /* Track metadata */
-  @Input() trackName:    string      = '';
-  @Input() artistName:   string      = '';
-  @Input() albumArtUrl:  string|null = null;
-  @Input() hasAlternatives = false;
-
   /* Events */
   @Output() togglePlay       = new EventEmitter<void>();
   @Output() prev             = new EventEmitter<void>();
@@ -42,8 +36,6 @@ export class PlayerControlsComponent implements OnInit, OnDestroy {
   @Output() toggleRepeat      = new EventEmitter<void>();
   @Output() seekTo             = new EventEmitter<number>();
   @Output() volumeChange       = new EventEmitter<number>();
-  @Output() changeVideo        = new EventEmitter<void>();
-  @Output() addToPlaylist      = new EventEmitter<void>();
   @Output() toggleFullscreen   = new EventEmitter<void>();
 
   ngOnInit(): void {

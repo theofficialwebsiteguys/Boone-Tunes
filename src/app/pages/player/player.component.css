@@ -42,9 +42,8 @@
   padding: 0.3rem 0.9rem;
   font-size: 0.8rem;
   color: var(--text-muted);
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .pill-dot {
@@ -92,11 +91,12 @@
    Sits above the iframe, blocking YouTube's
    native hover controls so our custom UI
    is the only interface the user sees.
-   The bottom-right corner is left unclipped
-   so the ad creative's "Skip Ad" button
-   (rendered regardless of controls:0) stays
-   clickable — it's the one YouTube surface
-   we still want to let through.             */
+   Only a small notch sized to the ad
+   creative's "Skip Ad" button (rendered
+   regardless of controls:0) is left
+   unclipped — everywhere else on screen,
+   including the rest of that corner, stays
+   covered by the overlay.                   */
 .yt-overlay {
   position: absolute;
   inset: 0;
@@ -105,9 +105,9 @@
   clip-path: polygon(
     0 0,
     100% 0,
-    100% calc(100% - 100px),
-    calc(100% - 160px) calc(100% - 100px),
-    calc(100% - 160px) 100%,
+    100% calc(100% - 44px),
+    calc(100% - 130px) calc(100% - 44px),
+    calc(100% - 130px) 100%,
     0 100%
   );
 }
@@ -156,23 +156,99 @@
    Completely outside the video-screen so it
    never blocks the iframe.                   */
 
-/* ── Video type preference bar ──────────── */
-.pref-bar {
+/* ── Now playing + video type + actions ──── */
+.now-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
   padding: 0.5rem 1.5rem;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-.pref-label {
-  font-size: 0.72rem;
-  font-weight: 600;
+.now-track {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.now-art {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.now-art-ph {
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+}
+
+.now-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.now-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.now-artist {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.now-artist::before {
+  content: '·';
+  margin-right: 0.4rem;
+  color: var(--text-dim);
+}
+
+.now-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--t), border-color var(--t), background var(--t);
+}
+
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--border-light);
+  background: rgba(255,255,255,0.05);
 }
 
 .pref-pills {
@@ -702,7 +778,7 @@
 /* ── Fullscreen layout ───────────────────── */
 /* Hide everything except the video screen when the page is fullscreen */
 :host-context(:fullscreen) .topbar,
-:host-context(:fullscreen) .pref-bar,
+:host-context(:fullscreen) .now-bar,
 :host-context(:fullscreen) .alts-bar,
 :host-context(:fullscreen) .controls-bar,
 :host-context(:fullscreen) app-queue-sidebar {
@@ -832,12 +908,6 @@
     gap: 0.3rem;
   }
 
-  .fs-btn {
-    width: 34px;
-    height: 32px;
-  }
-  .fs-btn svg { width: 14px; height: 14px; }
-
   /* Right controls: center, hide volume (use device buttons) */
   .fs-right-controls {
     flex: unset;
@@ -847,6 +917,35 @@
 
   .fs-vol {
     display: none;
+  }
+}
+
+/* ── Touch devices: enlarge tap targets — fullscreen playback controls are
+   the ones most likely to be used mid-video with a thumb. ── */
+@media (hover: none) {
+  .fs-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .fs-btn svg { width: 17px; height: 17px; }
+
+  .fs-playback {
+    gap: 0.4rem;
+  }
+
+  /* A wide text pill doesn't need the full 44px height bump to stay tappable
+     the way a small icon button does — keep it modest to save vertical space. */
+  .pref-pill {
+    padding: 0.42rem 0.85rem;
+  }
+
+  .btn-back {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .fs-qi-remove {
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -861,16 +960,43 @@
     max-width: 180px;
   }
 
-  .pref-bar {
-    padding: 0.4rem 1rem;
-    gap: 0.5rem;
+  /* Stack track info above the actions row rather than squeezing both onto
+     one line — each stays comfortably readable at phone widths. */
+  .now-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.5rem 1rem;
+    gap: 0.4rem;
+  }
+
+  .now-actions {
+    justify-content: space-between;
+  }
+
+  /* Icon-only pills on the actions row — the label text is what didn't fit;
+     the icon + tooltip is enough once this has its own row. A horizontal
+     scroll (with fade mask) is the fallback if it's still tight. */
+  .pref-pill-label {
+    display: none;
+  }
+  .pref-pill {
+    padding: 0.45rem;
+  }
+  .pref-pills {
+    flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
-    flex-wrap: nowrap;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
+            mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
   }
-  .pref-bar::-webkit-scrollbar { display: none; }
+  .pref-pills::-webkit-scrollbar { display: none; }
 
   .alts-bar {
     padding: 0.4rem 1rem;
+  }
+
+  .alts-list {
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+            mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
   }
 }

@@ -87,6 +87,12 @@
             ></app-track-row>
           }
         </div>
+
+        <!-- Infinite-scroll sentinel: loads the next page of tracks when it scrolls into view -->
+        <div #scrollSentinel class="scroll-sentinel"></div>
+        @if (loadingMore) {
+          <div class="state-msg">Loading more tracks…</div>
+        }
       }
     </div>
 

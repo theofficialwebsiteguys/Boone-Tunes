@@ -1,124 +1,8 @@
 .controls-wrap {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.85rem 1.5rem 0.75rem;
-}
-
-/* ── Track info row ──────────────────────── */
-.track-row {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.track-art {
-  width: 46px;
-  height: 46px;
-  border-radius: 6px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.track-art-placeholder {
-  background: var(--surface-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-dim);
-  font-size: 1.1rem;
-  border-radius: 6px;
-}
-
-.track-meta {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.08rem;
-}
-
-.badge-now-playing {
-  display: inline-block;
-  background: rgba(139, 92, 246, 0.2);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  color: #c4b5fd;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  padding: 0.1rem 0.5rem;
-  border-radius: 500px;
-  align-self: flex-start;
-  margin-bottom: 0.15rem;
-}
-
-.track-name {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.track-artist {
-  font-size: 0.76rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.streaming-label {
-  font-size: 0.7rem;
-  color: var(--teal);
-  margin-top: 0.05rem;
-}
-
-.btn-change-video {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  border-radius: 6px;
-  padding: 0.38rem 0.75rem;
-  font-size: 0.78rem;
-  font-family: inherit;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: color var(--t), border-color var(--t);
-}
-
-.btn-change-video:hover {
-  color: var(--text);
-  border-color: var(--border-light);
-}
-
-/* ── Add to playlist ─────────────────────── */
-.btn-add-playlist {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  width: 100%;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  border-radius: 6px;
-  padding: 0.45rem 1rem;
-  font-size: 0.8rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: color var(--t), background var(--t), border-color var(--t);
-}
-
-.btn-add-playlist:hover {
-  color: var(--text);
-  background: rgba(255,255,255,0.05);
-  border-color: var(--border-light);
+  gap: 0.5rem;
+  padding: 0.6rem 1.5rem 0.75rem;
 }
 
 /* ── Progress ────────────────────────────── */
@@ -291,22 +175,19 @@
    Responsive
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Mobile (≤ 600px): tighter padding, shrink volume, hide change-video ── */
+/* ── Mobile (≤ 600px): tighter padding, shrink volume ── */
 @media (max-width: 600px) {
   .controls-wrap {
-    padding: 0.7rem 1rem 0.6rem;
+    padding: 0.5rem 1rem 0.5rem;
   }
 
   .vol-track {
     width: 60px;
   }
-
-  .btn-change-video {
-    display: none;
-  }
 }
 
-/* ── Small mobile (≤ 420px): further tighten controls row ── */
+/* ── Small mobile (≤ 420px): further tighten spacing only — button sizes are
+   handled by the touch-target rule below, never shrunk here ── */
 @media (max-width: 420px) {
   .controls-wrap {
     padding: 0.6rem 0.75rem 0.5rem;
@@ -316,18 +197,53 @@
     gap: 0.2rem;
   }
 
+  .vol-track {
+    width: 45px;
+  }
+}
+
+/* ── Touch devices: enlarge tap targets to the ~44px minimum regardless of
+   viewport width — screen size is a poor proxy for touch precision (a
+   narrow desktop window still has a mouse; a large tablet may not).
+   The row is cast + shuffle + prev + play + next + repeat + volume +
+   fullscreen — that's 8 things, and there isn't width for all of them at
+   44px on a phone. Give the 5 core transport buttons (shuffle/prev/play/
+   next/repeat) the full touch target since those are what people actually
+   tap mid-song; keep cast/fullscreen modest since they're one-off taps, and
+   drop the volume slider (the device's hardware buttons already do this) —
+   same trade-off already used in the fullscreen view's mobile controls. ── */
+@media (hover: none) {
   .ctrl-btn {
-    width: 32px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .ctrl-btn svg {
+    width: 17px;
+    height: 17px;
   }
 
   .play-btn {
-    width: 40px;
-    height: 40px;
-    margin: 0 0.2rem;
+    width: 52px;
+    height: 52px;
   }
 
-  .vol-track {
-    width: 45px;
+  .center-controls {
+    gap: 0.15rem;
+  }
+
+  .cast-btn,
+  .fullscreen-btn {
+    width: 36px;
+    height: 34px;
+  }
+
+  .volume-row {
+    display: none;
+  }
+
+  /* Bigger drag/tap hit area for the progress thumb without changing its visual size */
+  .progress-input {
+    inset: -12px 0;
   }
 }

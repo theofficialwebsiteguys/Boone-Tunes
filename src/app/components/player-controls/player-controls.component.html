@@ -1,37 +1,5 @@
 <div class="controls-wrap">
 
-  <!-- Track info row -->
-  <div class="track-row">
-    @if (albumArtUrl) {
-      <img class="track-art" [src]="albumArtUrl" [alt]="trackName" />
-    } @else {
-      <div class="track-art track-art-placeholder">♪</div>
-    }
-
-    <div class="track-meta">
-      <span class="badge-now-playing">Now Playing</span>
-      <span class="track-name">{{ trackName || 'No track selected' }}</span>
-      <span class="track-artist">{{ artistName }}</span>
-      <span class="streaming-label">Streaming via YouTube</span>
-    </div>
-
-    <!-- <button class="btn-change-video" (click)="changeVideo.emit()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <polyline points="23 4 23 10 17 10"/>
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-      </svg>
-      Change Video
-    </button> -->
-  </div>
-
-  <!-- Add to playlist -->
-  <button class="btn-add-playlist" (click)="addToPlaylist.emit()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Add to BooneTunes Playlist
-  </button>
-
   <!-- Progress bar -->
   <div class="progress-track">
     <div class="progress-fill" [style.width.%]="progress"></div>

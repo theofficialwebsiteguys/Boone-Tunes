@@ -14,12 +14,11 @@ import { BtPlaylist } from '../../models/bt-playlist.model';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { PlaylistCardComponent } from '../../components/playlist-card/playlist-card.component';
 import { TrackRowComponent } from '../../components/track-row/track-row.component';
-import { MoodQuizComponent } from '../../components/mood-quiz/mood-quiz.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, NavbarComponent, PlaylistCardComponent, TrackRowComponent, MoodQuizComponent],
+  imports: [RouterLink, NavbarComponent, PlaylistCardComponent, TrackRowComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -59,7 +58,10 @@ export class DashboardComponent implements OnInit {
   likedTracks: Track[] = [];
   loadingLiked = false;
   likedError = '';
+  likedHasMore = false;
+  loadingMoreLiked = false;
   private likedLoaded = false;
+  private likedNextOffset = 0;
 
   get visiblePlaylists(): Playlist[] {
     return this.playlists.filter(p => p.spotifyPlaylistId !== 'liked-songs');
@@ -103,9 +105,11 @@ export class DashboardComponent implements OnInit {
   private loadLikedTracks(): void {
     this.loadingLiked = true;
     this.likedError = '';
-    this.plSvc.getTracks('liked-songs').subscribe({
+    this.plSvc.getTracks('liked-songs', 0).subscribe({
       next: res => {
         this.likedTracks = res.tracks;
+        this.likedHasMore = res.pagination.hasMore;
+        this.likedNextOffset = res.pagination.offset + res.pagination.limit;
         this.likedLoaded = true;
         this.loadingLiked = false;
       },
@@ -113,6 +117,20 @@ export class DashboardComponent implements OnInit {
         this.likedError = 'Failed to load liked songs.';
         this.loadingLiked = false;
       }
+    });
+  }
+
+  loadMoreLiked(): void {
+    if (this.loadingMoreLiked || !this.likedHasMore) return;
+    this.loadingMoreLiked = true;
+    this.plSvc.getTracks('liked-songs', this.likedNextOffset).subscribe({
+      next: res => {
+        this.likedTracks = [...this.likedTracks, ...res.tracks];
+        this.likedHasMore = res.pagination.hasMore;
+        this.likedNextOffset = res.pagination.offset + res.pagination.limit;
+        this.loadingMoreLiked = false;
+      },
+      error: () => { this.loadingMoreLiked = false; }
     });
   }
 

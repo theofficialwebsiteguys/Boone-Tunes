@@ -13,6 +13,10 @@
   padding: 1.5rem 2.5rem 6rem;
 }
 
+.scroll-sentinel {
+  height: 1px;
+}
+
 /* ── Back button ────────────────────────── */
 .btn-back {
   display: inline-flex;

@@ -12,7 +12,7 @@
     @if (currentItem) {
       <div class="now-playing-pill">
         <span class="pill-dot"></span>
-        Now Playing — {{ currentItem.track.name }}
+        <app-marquee-text [text]="'Now Playing — ' + currentItem.track.name"></app-marquee-text>
       </div>
     }
 
@@ -264,26 +264,68 @@
             <div class="spinner"></div>
             <p>Finding music video…</p>
           </div>
+        } @else if (resolutionStatus === 'no_match' || resolutionStatus === 'unavailable') {
+          <div class="video-loading">
+            <p>No YouTube video found for this track.</p>
+            <button class="btn-out" (click)="skipToNext()">Skip to next</button>
+          </div>
+        } @else if (resolutionStatus === 'quota_blocked') {
+          <div class="video-loading">
+            <p>YouTube search is at capacity right now. Cached songs keep playing — this one will be available again soon.</p>
+            <button class="btn-out" (click)="skipToNext()">Skip to next</button>
+          </div>
+        } @else if (resolutionStatus === 'temporarily_failed') {
+          <div class="video-loading">
+            <p>Couldn't load this video.</p>
+            <button class="btn-out" (click)="retryCurrent()">Retry</button>
+            <button class="btn-out" (click)="skipToNext()">Skip</button>
+          </div>
         }
       </div>
 
-      <!-- Video type preference -->
-      <div class="pref-bar">
-        <span class="pref-label">Video type</span>
-        <div class="pref-pills">
-          @for (opt of videoPrefOptions; track opt.value) {
-            <button
-              class="pref-pill"
-              [class.active]="videoPreference === opt.value"
-              (click)="playerSvc.setVideoPreference(opt.value)"
-              [title]="opt.label"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-                <path [attr.d]="opt.icon"/>
-              </svg>
-              {{ opt.label }}
-            </button>
+      <!-- Now playing + video type + actions — one condensed row -->
+      <div class="now-bar">
+        <div class="now-track">
+          @if (currentItem?.track?.albumArtUrl) {
+            <img class="now-art" [src]="currentItem!.track.albumArtUrl" [alt]="currentItem!.track.name" />
+          } @else {
+            <div class="now-art now-art-ph">♪</div>
           }
+          <div class="now-meta">
+            <span class="now-title">{{ currentItem?.track?.name || 'No track selected' }}</span>
+            @if (currentItem?.track?.artists?.length) {
+              <span class="now-artist">{{ currentItem!.track.artists.join(', ') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="now-actions">
+          <div class="pref-pills">
+            @for (opt of videoPrefOptions; track opt.value) {
+              <button
+                class="pref-pill"
+                [class.active]="videoPreference === opt.value"
+                (click)="playerSvc.setVideoPreference(opt.value)"
+                [title]="opt.label"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                  <path [attr.d]="opt.icon"/>
+                </svg>
+                <span class="pref-pill-label">{{ opt.label }}</span>
+              </button>
+            }
+          </div>
+          <button class="icon-btn" title="Switch video" (click)="onChangeVideo()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Add to BooneTunes Playlist" (click)="onAddToPlaylist()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -323,10 +365,6 @@
           [volume]="volume"
           [currentTime]="currentTimeStr"
           [totalTime]="totalTimeStr"
-          [trackName]="currentItem?.track?.name ?? ''"
-          [artistName]="currentItem?.track?.artists?.join(' · ') ?? ''"
-          [albumArtUrl]="currentItem?.track?.albumArtUrl ?? null"
-          [hasAlternatives]="videos.length > 1"
           (togglePlay)="playerSvc.togglePlay()"
           (prev)="playerSvc.previous()"
           (next)="playerSvc.next()"
@@ -334,8 +372,6 @@
           (toggleRepeat)="playerSvc.toggleRepeat()"
           (seekTo)="onSeekTo($event)"
           (volumeChange)="onVolumeChange($event)"
-          (changeVideo)="playerSvc.fetchVideos()"
-          (addToPlaylist)="onAddToPlaylist()"
           (toggleFullscreen)="toggleFullscreen()"
         ></app-player-controls>
       </div>

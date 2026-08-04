@@ -296,10 +296,15 @@ h3 {
   50%       { transform: scaleY(1); }
 }
 
-/* ── Touch devices: always show drag handle + remove (no hover available) ── */
+/* ── Touch devices: always show drag handle + remove (no hover available),
+   and size the remove button up from 24px toward a more reliable tap target */
 @media (hover: none) {
   .drag-handle { opacity: 1; }
-  .btn-remove  { opacity: 1; }
+  .btn-remove {
+    opacity: 1;
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* ── Empty state ────────────────────────── */

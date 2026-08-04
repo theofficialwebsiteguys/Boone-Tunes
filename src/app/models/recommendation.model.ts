@@ -1,11 +1,3 @@
-export interface SpotifyEditorialPlaylist {
-  id: string;
-  name: string;
-  description: string | null;
-  imageUrl: string | null;
-  trackCount: number;
-}
-
 export interface TrendingVideo {
   videoId: string;
   title: string;

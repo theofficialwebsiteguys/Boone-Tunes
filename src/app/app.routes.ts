@@ -54,12 +54,12 @@ export const routes: Routes = [
       import('./pages/products/products.component').then(m => m.ProductsComponent),
     canActivate: [authGuard]
   },
-  {
-    path: 'articles',
-    loadComponent: () =>
-      import('./pages/articles/articles.component').then(m => m.ArticlesComponent),
-    canActivate: [authGuard]
-  },
+  // {
+  //   path: 'articles',
+  //   loadComponent: () =>
+  //     import('./pages/articles/articles.component').then(m => m.ArticlesComponent),
+  //   canActivate: [authGuard]
+  // },
   {
     path: 'articles/:id',
     loadComponent: () =>
