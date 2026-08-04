@@ -1,1 +1,0 @@
-import{a as o}from"./chunk-LY2Y35VR.js";import{S as a,Y as i}from"./chunk-PLWILP6T.js";var c=class r{api=i(o);search(t,e=20){return this.api.get("/api/search",{q:t,limit:e})}static \u0275fac=function(e){return new(e||r)};static \u0275prov=a({token:r,factory:r.\u0275fac,providedIn:"root"})};export{c as a};
