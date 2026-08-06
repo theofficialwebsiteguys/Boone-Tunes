@@ -189,8 +189,11 @@ export class DashboardComponent implements OnInit {
     this.player.addYouTubeVideoToQueue(video);
   }
 
-  playTrack(track: Track): void {
-    this.player.appendTracksToQueue([track]);
+  /** Plays `list[index]` immediately, replacing the queue with the rest of
+   *  that list — `list` is whichever backing array the clicked row belongs
+   *  to (searchResults or likedTracks), passed from the template loop. */
+  playTrack(list: Track[], index: number): void {
+    this.player.playTracksFrom(list, index);
   }
 
   addToQueue(track: Track): void {

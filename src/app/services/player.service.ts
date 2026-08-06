@@ -116,6 +116,18 @@ export class PlayerService {
     this.router.navigate(['/player']);
   }
 
+  /** Replaces the queue with `tracks` and starts playing at `startIndex` —
+   *  this is what "choosing a song" should do: jump to and play that exact
+   *  song right now, continuing through the rest of the given list
+   *  afterward. Discards whatever was playing/queued before, so a stale
+   *  track left over from an earlier session never lingers as "current"
+   *  while the newly-picked one sits waiting in "next". */
+  playTracksFrom(tracks: Track[], startIndex = 0): void {
+    if (!tracks.length) return;
+    const items: QueueItem[] = tracks.map(t => ({ track: t, youtubeVideoId: null, status: 'ready' }));
+    this.playItems(items, startIndex);
+  }
+
   /** Fisher-Yates shuffle the given tracks, then append to queue. */
   shuffleAndAppendToQueue(tracks: Track[]): void {
     if (!tracks.length) return;
@@ -424,12 +436,20 @@ export class PlayerService {
   setVideoPreference(pref: VideoPreference): void {
     this.videoPrefS.next(pref);
     localStorage.setItem(PREF_KEY, pref);
-    // Re-pick from already-fetched alternatives without a new API call
+
     const videos = this.videosS.value;
     if (videos.length > 0) {
+      // Alternates already loaded for this track — re-pick, zero new API calls.
       const preferred = this.pickPreferredVideo(videos);
       if (preferred) this.currentVideoS.next(preferred.videoId);
+      return;
     }
+
+    // Nothing loaded yet (the common case — only the single default video was
+    // resolved). Picking a type is an explicit request to see that category,
+    // so it's worth the one-time alternates search; loadVideoAlternatives()
+    // lands on this exact preference once results come back.
+    this.loadVideoAlternatives();
   }
 
   /** Called by the YouTube player on each 500 ms tick */
@@ -533,8 +553,11 @@ export class PlayerService {
   }
 
   /** Explicitly loads the "Switch video" alternates for the current track —
-   *  only ever called from the UI on demand, never automatically. */
+   *  only ever called from the UI on demand (opening that row, or picking a
+   *  video-type pill before alternates exist yet), never automatically.
+   *  Lands on whatever the current video-type preference is once loaded. */
   loadVideoAlternatives(): void {
+    if (this.videosS.value.length > 0) return; // already loaded for this track — no new call
     const item = this.currentItem;
     if (!item) return;
 
@@ -542,7 +565,11 @@ export class PlayerService {
     const artist = item.track.artists[0] ?? '';
 
     this.ytSvc.searchForTrack(track, artist).subscribe({
-      next: result => this.videosS.next(result.videos),
+      next: result => {
+        this.videosS.next(result.videos);
+        const preferred = this.pickPreferredVideo(result.videos);
+        if (preferred) this.currentVideoS.next(preferred.videoId);
+      },
       error: () => { /* non-fatal — alternates are a bonus, current video keeps playing */ },
     });
   }

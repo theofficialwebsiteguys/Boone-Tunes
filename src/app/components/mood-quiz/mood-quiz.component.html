@@ -158,7 +158,7 @@
                 <app-track-row
                   [track]="track"
                   [index]="i"
-                  (play)="playTrack(track)"
+                  (play)="playTrack(pl.tracks, i)"
                   (queue)="addToQueue(track)"
                 ></app-track-row>
               }

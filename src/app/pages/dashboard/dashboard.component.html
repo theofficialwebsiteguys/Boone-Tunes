@@ -30,7 +30,7 @@
               <app-track-row
                 [track]="track"
                 [index]="i"
-                (play)="playTrack(track)"
+                (play)="playTrack(searchResults, i)"
                 (queue)="addToQueue(track)"
               ></app-track-row>
             }
@@ -213,7 +213,7 @@
                 <app-track-row
                   [track]="track"
                   [index]="i"
-                  (play)="playTrack(track)"
+                  (play)="playTrack(likedTracks, i)"
                   (queue)="addToQueue(track)"
                 ></app-track-row>
               }

@@ -134,18 +134,25 @@ export class PlaylistDetailComponent implements OnInit, AfterViewInit, OnDestroy
 
   playAll(): void {
     if (this.tracks.length) {
-      this.player.appendTracksToQueue(this.tracks);
+      this.player.playTracksFrom(this.tracks, 0);
     }
   }
 
   playShuffle(): void {
-    if (this.tracks.length) {
-      this.player.shuffleAndAppendToQueue(this.tracks);
+    if (!this.tracks.length) return;
+    const shuffled = [...this.tracks];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+    this.player.playTracksFrom(shuffled, 0);
   }
 
-  playTrack(track: Track): void {
-    this.player.appendTracksToQueue([track]);
+  /** Plays `list[index]` immediately, replacing the queue with the rest of
+   *  that list — `list` is either `tracks` or `recommended`, whichever the
+   *  clicked row belongs to (passed straight from the template loop). */
+  playTrack(list: Track[], index: number): void {
+    this.player.playTracksFrom(list, index);
   }
 
   addToQueue(track: Track): void {

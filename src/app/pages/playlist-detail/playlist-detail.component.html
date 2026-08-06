@@ -82,7 +82,7 @@
             <app-track-row
               [track]="track"
               [index]="i"
-              (play)="playTrack(track)"
+              (play)="playTrack(tracks, i)"
               (queue)="addToQueue(track)"
             ></app-track-row>
           }
@@ -108,7 +108,7 @@
               <app-track-row
                 [track]="track"
                 [index]="i"
-                (play)="playTrack(track)"
+                (play)="playTrack(recommended, i)"
                 (queue)="addToQueue(track)"
               ></app-track-row>
             }

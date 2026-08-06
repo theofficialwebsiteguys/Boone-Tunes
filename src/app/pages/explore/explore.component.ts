@@ -146,11 +146,11 @@ export class ExploreComponent implements OnInit {
   /* ── Shared track actions ─────────────────────────────────────────── */
 
   playAll(tracks: Track[]): void {
-    if (tracks.length) this.player.appendTracksToQueue(tracks);
+    if (tracks.length) this.player.playTracksFrom(tracks, 0);
   }
 
-  playTrack(track: Track): void {
-    this.player.appendTracksToQueue([track]);
+  playTrack(list: Track[], index: number): void {
+    this.player.playTracksFrom(list, index);
   }
 
   addToQueue(track: Track): void {

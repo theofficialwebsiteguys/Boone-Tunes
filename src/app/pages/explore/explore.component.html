@@ -41,7 +41,7 @@
             <app-track-row
               [track]="track"
               [index]="i"
-              (play)="playTrack(track)"
+              (play)="playTrack(recTracks, i)"
               (queue)="addToQueue(track)"
             ></app-track-row>
           }

@@ -309,15 +309,21 @@ export class MoodQuizComponent {
   }
 
   playAll(pl: VirtualPlaylist): void {
-    if (pl.tracks.length) this.player.appendTracksToQueue(pl.tracks);
+    if (pl.tracks.length) this.player.playTracksFrom(pl.tracks, 0);
   }
 
   shuffleAll(pl: VirtualPlaylist): void {
-    if (pl.tracks.length) this.player.shuffleAndAppendToQueue(pl.tracks);
+    if (!pl.tracks.length) return;
+    const shuffled = [...pl.tracks];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    this.player.playTracksFrom(shuffled, 0);
   }
 
-  playTrack(track: Track): void {
-    this.player.appendTracksToQueue([track]);
+  playTrack(tracks: Track[], index: number): void {
+    this.player.playTracksFrom(tracks, index);
   }
 
   addToQueue(track: Track): void {

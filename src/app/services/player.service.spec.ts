@@ -133,4 +133,75 @@ describe('PlayerService', () => {
     httpMock.expectNone(resolutionUrl('known'));
     expect(service.currentVideoId).toBe('preset-vid');
   });
+
+  describe('playTracksFrom', () => {
+    it('replaces the queue and plays the chosen track immediately, even mid-playback of something else', () => {
+      // Something is already current (and left paused, e.g. from an earlier session).
+      service.playItems([{ track: track('old'), youtubeVideoId: 'vid-old', status: 'ready' }]);
+      service.togglePlay(); // pause it
+
+      // User picks a different song from a list — must jump straight to it and play it,
+      // not sit on the old track with the new one merely queued as "next".
+      service.playTracksFrom([track('picked'), track('after')], 0);
+
+      expect(service.index).toBe(0);
+      expect(service.currentItem?.track.spotifyId).toBe('picked');
+      expect(service.isPlaying).toBe(true);
+      expect(service.queue.map(q => q.track.spotifyId)).toEqual(['picked', 'after']);
+
+      httpMock.expectOne(resolutionUrl('picked')).flush({ status: 'resolved', videoId: 'vid-picked', source: 'search', confidence: 0.9, retryAfter: null });
+      expect(service.currentVideoId).toBe('vid-picked');
+
+      // Bounded prefetch for "after" — not a bug, just needs to be drained.
+      httpMock.expectOne(resolutionUrl('after')).flush({ status: 'resolved', videoId: 'vid-after', source: 'search', confidence: 0.9, retryAfter: null });
+    });
+
+    it('starts at the given index, not always the front of the list', () => {
+      service.playTracksFrom([track('a'), track('b'), track('c')], 1);
+      expect(service.index).toBe(1);
+      expect(service.currentItem?.track.spotifyId).toBe('b');
+      httpMock.expectOne(resolutionUrl('b')).flush({ status: 'resolved', videoId: 'vid-b', source: 'search', confidence: 0.9, retryAfter: null });
+
+      // Bounded prefetch for "c" (the only remaining track) — drain it too.
+      httpMock.expectOne(resolutionUrl('c')).flush({ status: 'resolved', videoId: 'vid-c', source: 'search', confidence: 0.9, retryAfter: null });
+    });
+  });
+
+  describe('setVideoPreference', () => {
+    const searchUrl = `${environment.apiUrl}/api/youtube/search`;
+
+    it('fetches alternates on demand when none are loaded yet, and lands on the requested category', () => {
+      service.appendTracksToQueue([track('a')]);
+      httpMock.expectOne(resolutionUrl('a')).flush({ status: 'resolved', videoId: 'vid-default', source: 'search', confidence: 0.9, retryAfter: null });
+
+      service.setVideoPreference('live');
+
+      const req = httpMock.expectOne(r => r.url === searchUrl);
+      req.flush({
+        videos: [
+          { videoId: 'vid-mv', title: 'Music Video', channelTitle: 'Artist', thumbnail: null, category: 'music-video' },
+          { videoId: 'vid-live', title: 'Live', channelTitle: 'Artist', thumbnail: null, category: 'live' },
+        ],
+      });
+
+      expect(service.currentVideoId).toBe('vid-live');
+    });
+
+    it('does not re-fetch once alternates are already loaded for the current track', () => {
+      service.appendTracksToQueue([track('a')]);
+      httpMock.expectOne(resolutionUrl('a')).flush({ status: 'resolved', videoId: 'vid-default', source: 'search', confidence: 0.9, retryAfter: null });
+
+      service.setVideoPreference('live');
+      httpMock.expectOne(r => r.url === searchUrl).flush({
+        videos: [
+          { videoId: 'vid-mv', title: 'Music Video', channelTitle: 'Artist', thumbnail: null, category: 'music-video' },
+          { videoId: 'vid-live', title: 'Live', channelTitle: 'Artist', thumbnail: null, category: 'live' },
+        ],
+      });
+
+      service.setVideoPreference('music-video');
+      httpMock.expectNone(r => r.url === searchUrl);
+      expect(service.currentVideoId).toBe('vid-mv');
+    });
+  });
 });
